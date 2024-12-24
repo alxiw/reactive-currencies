@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.github.alxiw.reactivecurrencies.presentation.view.CurrencyCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/currency_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:enableInput="false" />

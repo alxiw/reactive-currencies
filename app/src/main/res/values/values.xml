@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="icon_size">32sp</dimen>
+    <dimen name="short_text_size">12sp</dimen>
+    <dimen name="long_text_size">16sp</dimen>
+    <dimen name="value_text_size">14sp</dimen>
+    <dimen name="sign_text_size">14sp</dimen>
+    <dimen name="inner_padding">8dp</dimen>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CurrencyCardView">
+        <attr name="iconSize" format="dimension" />
+        <attr name="shortNameTextSize" format="dimension" />
+        <attr name="shortNameTextColor" format="reference" />
+        <attr name="longNameTextSize" format="dimension" />
+        <attr name="longNameTextColor" format="reference" />
+        <attr name="valueTextSize" format="dimension" />
+        <attr name="valueTextColor" format="reference" />
+        <attr name="signSizeTextSize" format="dimension" />
+        <attr name="signSizeTextColor" format="reference" />
+        <attr name="enableInput" format="boolean" />
+    </declare-styleable>
+</resources>
