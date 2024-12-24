@@ -1,4 +1,4 @@
-## Reactive Currencies
+# Reactive Currencies
 
 An Android application that leverages the Central Bank of Russia [API](https://cbr.ru/eng/currency_base/daily/) to fetch exchange rates for 44 currencies. Built with a focus on best practices, the app employs an MVVM architecture, Repository pattern, Room database, and utilizes key Android Architecture Components such as ViewModel and ViewBinding. It allows users to select a base currency and dynamically calculate exchange rates for other currencies based on the chosen value.
 
