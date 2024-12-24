@@ -21,7 +21,7 @@ class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository
 
     fun init() {
         val disposable = retryManager.observeRetries().subscribe {
-            triggerEvent(LoadEvent.ShowRefreshing())
+            triggerEvent(LoadEvent.ShowRefreshing)
             updateAllCurrencies(fromUi = true)
         }
         compositeDisposable.add(disposable)
@@ -39,7 +39,7 @@ class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository
                     if (fromUi) {
                         updateAllCurrencies(fromUi = false)
                     } else {
-                        triggerEvent(LoadEvent.ShowStub())
+                        triggerEvent(LoadEvent.ShowStub)
                     }
                 }
             )
@@ -56,8 +56,8 @@ class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository
                     triggerEvent(LoadEvent.ShowLoadingSuccess(info))
                 },
                 { error ->
-                    if (!fromUi) triggerEvent(LoadEvent.ShowStub())
-                    triggerEvent(LoadEvent.ShowLoadingError())
+                    if (!fromUi) triggerEvent(LoadEvent.ShowStub)
+                    triggerEvent(LoadEvent.ShowLoadingError)
                 }
             )
         compositeDisposable.add(disposable)
@@ -72,7 +72,7 @@ class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository
                     triggerEvent(LoadEvent.ShowList(list, false))
                 },
                 { error ->
-                    triggerEvent(LoadEvent.ShowUpdatingError())
+                    triggerEvent(LoadEvent.ShowUpdatingError)
                 }
             )
         compositeDisposable.add(disposable)
@@ -87,7 +87,7 @@ class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository
                     triggerEvent(LoadEvent.ShowList(list, false))
                 },
                 { error ->
-                    triggerEvent(LoadEvent.ShowUpdatingError())
+                    triggerEvent(LoadEvent.ShowUpdatingError)
                 }
             )
         compositeDisposable.add(disposable)
@@ -105,12 +105,12 @@ class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository
         eventSubject.onNext(event)
     }
 
-    sealed class LoadEvent {
-        class ShowStub : LoadEvent()
-        class ShowLoadingError : LoadEvent()
-        class ShowLoadingSuccess(val info: String) : LoadEvent()
-        class ShowList(val list: List<Currency>, val useSavedState: Boolean) : LoadEvent()
-        class ShowRefreshing : LoadEvent()
-        class ShowUpdatingError : LoadEvent()
+    sealed interface LoadEvent {
+        data object ShowStub : LoadEvent
+        data object ShowLoadingError : LoadEvent
+        data class ShowLoadingSuccess(val info: String) : LoadEvent
+        data class ShowList(val list: List<Currency>, val useSavedState: Boolean) : LoadEvent
+        data object ShowRefreshing : LoadEvent
+        data object ShowUpdatingError : LoadEvent
     }
 }
