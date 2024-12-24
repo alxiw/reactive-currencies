@@ -1,8 +1,8 @@
 package io.github.alxiw.reactivecurrencies
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
+import androidx.room.Room
 import io.github.alxiw.reactivecurrencies.data.CurrenciesRepository
 import io.github.alxiw.reactivecurrencies.data.network.CbrApiService
 import io.github.alxiw.reactivecurrencies.data.network.RemoteDataSource
@@ -18,17 +18,16 @@ import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import java.util.concurrent.TimeUnit
 
 private const val BASE_URL = "https://cbr.ru/scripts/"
+private const val DB_NAME = "currencies.db"
+private const val PREFS_NAME = "currencies_prefs"
 
 object Dependencies {
 
     private lateinit var applicationContext: Context
 
-    private val sharedPreferences: SharedPreferences by lazy {
-        applicationContext.getSharedPreferences("currencies_prefs", Context.MODE_PRIVATE)
-    }
-
     private val currencySharedPreferences: CurrencySharedPreferences by lazy {
-        CurrencySharedPreferences(sharedPreferences)
+        val sp = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        CurrencySharedPreferences(sp)
     }
 
     private val apiService: CbrApiService by lazy {
@@ -60,8 +59,9 @@ object Dependencies {
         RemoteDataSource(apiService)
     }
 
+
     private val appDatabase: AppDatabase by lazy {
-        AppDatabase.getDatabase(applicationContext)
+        Room.databaseBuilder(applicationContext, AppDatabase::class.java, DB_NAME).build()
     }
 
     private val localDataSource: LocalDataSource by lazy {
