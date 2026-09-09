@@ -17,7 +17,7 @@ import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = "https://cbr.ru/scripts/"
+private const val BASE_URL = "https://www.cbr-xml-daily.com/"
 private const val DB_NAME = "currencies.db"
 private const val PREFS_NAME = "currencies_prefs"
 
@@ -31,13 +31,11 @@ object Dependencies {
     }
 
     private val apiService: CbrApiService by lazy {
-        val httpLoggingInterceptor =
-            HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
-                override fun log(message: String) {
-                    Log.d("HELLO", message)
-                }
-            })
-        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BASIC
+        val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
+            Log.d("HELLO", message)
+        }.apply {
+            level = HttpLoggingInterceptor.Level.BASIC
+        }
 
         val client =  OkHttpClient.Builder()
             .readTimeout(15, TimeUnit.SECONDS)
@@ -75,6 +73,6 @@ object Dependencies {
     val viewModelFactory by lazy { CurrenciesViewModelFactory(currenciesRepository) }
 
     fun init(context: Context) {
-        applicationContext = context
+        applicationContext = context.applicationContext
     }
 }

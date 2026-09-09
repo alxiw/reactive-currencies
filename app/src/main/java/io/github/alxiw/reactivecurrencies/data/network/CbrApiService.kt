@@ -6,6 +6,6 @@ import retrofit2.http.GET
 
 interface CbrApiService {
 
-    @GET("XML_daily.asp")
+    @GET("daily_eng_utf8.xml")
     fun getCbrCurrencies(): Single<CbrCurrenciesResponse>
 }

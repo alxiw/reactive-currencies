@@ -1,15 +1,17 @@
 # Reactive Currencies
 
-An Android application that leverages the Central Bank of Russia [API](https://cbr.ru/eng/currency_base/daily/) to fetch exchange rates for 44 currencies. Built with a focus on best practices, the app employs an MVVM architecture, Repository pattern, Room database, and utilizes key Android Architecture Components such as ViewModel and ViewBinding. It allows users to select a base currency and dynamically calculate exchange rates for other currencies based on the chosen value.
+Android app for converting currencies using official exchange rates from the Central Bank of Russia, covering more than 50 currencies.
+
+The app is built around the Repository pattern, with a Room database used for local storage to keep the app fully functional offline once rates have been fetched. The presentation layer follows MVVM. Users can select any currency as the base and instantly see recalculated exchange values for all other currencies based on the entered amount.
 
 <img src="img/sample.png" alt="drawing" width="200"/>
 
 ## Dependencies
 
-* [Kotlin](https://github.com/JetBrains/kotlin) 2.1.0
-* [RxJava](https://github.com/ReactiveX/RxJava) 3.1.10
-* [Retrofit](https://github.com/square/retrofit) 2.11.0
-* [Room](https://developer.android.com/training/data-storage/room) 2.6.1
+* [Kotlin](https://github.com/JetBrains/kotlin) 2.4.20
+* [RxJava](https://github.com/ReactiveX/RxJava) 3.1.12
+* [Retrofit](https://github.com/square/retrofit) 3.0.0
+* [Room](https://developer.android.com/training/data-storage/room) 2.8.5
 
 ## License
 
