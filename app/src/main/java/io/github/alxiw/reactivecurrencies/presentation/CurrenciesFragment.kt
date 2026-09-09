@@ -21,7 +21,7 @@ import io.github.alxiw.reactivecurrencies.data.model.Currency
 import io.github.alxiw.reactivecurrencies.presentation.listeners.OnItemClickListener
 import io.github.alxiw.reactivecurrencies.presentation.listeners.OnValueChangeListener
 import com.google.android.material.snackbar.Snackbar
-import io.github.alxiw.reactivecurrencies.Dependencies
+import io.github.alxiw.reactivecurrencies.App
 import io.github.alxiw.reactivecurrencies.databinding.FragmentCurrenciesBinding
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
@@ -29,7 +29,9 @@ import java.math.BigDecimal
 
 class CurrenciesFragment : Fragment() {
 
-    private val viewModel: CurrenciesViewModel by viewModels { Dependencies.viewModelFactory }
+    private val viewModel: CurrenciesViewModel by viewModels {
+        (requireActivity().application as App).container.viewModelFactory
+    }
 
     private lateinit var binding: FragmentCurrenciesBinding
 

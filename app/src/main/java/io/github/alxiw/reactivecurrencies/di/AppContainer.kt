@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies
+package io.github.alxiw.reactivecurrencies.di
 
 import android.content.Context
 import android.util.Log
@@ -21,9 +21,14 @@ private const val BASE_URL = "https://www.cbr-xml-daily.com/"
 private const val DB_NAME = "currencies.db"
 private const val PREFS_NAME = "currencies_prefs"
 
-object Dependencies {
+interface AppContainer {
+    val currenciesRepository: CurrenciesRepository
+    val viewModelFactory: CurrenciesViewModelFactory
+}
 
-    private lateinit var applicationContext: Context
+class DefaultAppContainer(context: Context) : AppContainer {
+
+    private val applicationContext: Context = context.applicationContext
 
     private val currencySharedPreferences: CurrencySharedPreferences by lazy {
         val sp = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -37,7 +42,7 @@ object Dependencies {
             level = HttpLoggingInterceptor.Level.BASIC
         }
 
-        val client =  OkHttpClient.Builder()
+        val client = OkHttpClient.Builder()
             .readTimeout(15, TimeUnit.SECONDS)
             .connectTimeout(15, TimeUnit.SECONDS)
             .addInterceptor(httpLoggingInterceptor)
@@ -57,7 +62,6 @@ object Dependencies {
         RemoteDataSource(apiService)
     }
 
-
     private val appDatabase: AppDatabase by lazy {
         Room.databaseBuilder(applicationContext, AppDatabase::class.java, DB_NAME).build()
     }
@@ -66,13 +70,11 @@ object Dependencies {
         LocalDataSource(appDatabase)
     }
 
-    val currenciesRepository: CurrenciesRepository by lazy {
+    override val currenciesRepository: CurrenciesRepository by lazy {
         CurrenciesRepository(localDataSource, remoteDataSource, currencySharedPreferences)
     }
 
-    val viewModelFactory by lazy { CurrenciesViewModelFactory(currenciesRepository) }
-
-    fun init(context: Context) {
-        applicationContext = context.applicationContext
+    override val viewModelFactory: CurrenciesViewModelFactory by lazy {
+        CurrenciesViewModelFactory(currenciesRepository)
     }
 }

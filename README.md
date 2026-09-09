@@ -1,6 +1,6 @@
 # Reactive Currencies
 
-Android app for converting currencies using official exchange rates from the Central Bank of Russia, covering more than 50 currencies.
+Android app for converting currencies using official exchange rates from the [Central Bank of Russia](https://cbr.ru/eng/currency_base/daily/), covering more than 50 currencies.
 
 The app is built around the Repository pattern, with a Room database used for local storage to keep the app fully functional offline once rates have been fetched. The presentation layer follows MVVM. Users can select any currency as the base and instantly see recalculated exchange values for all other currencies based on the entered amount.
 
