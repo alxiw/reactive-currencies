@@ -1,9 +1,7 @@
 package io.github.alxiw.reactivecurrencies.presentation
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -15,6 +13,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dev.androidbroadcast.vbpd.viewBinding
 import io.github.alxiw.reactivecurrencies.App
 import io.github.alxiw.reactivecurrencies.R
 import io.github.alxiw.reactivecurrencies.data.model.Currency
@@ -23,13 +22,13 @@ import io.github.alxiw.reactivecurrencies.presentation.recycler.CurrenciesAdapte
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
-class CurrenciesFragment : Fragment() {
+class CurrenciesFragment : Fragment(R.layout.fragment_currencies) {
 
     private val viewModel: CurrenciesViewModel by viewModels {
         (requireActivity().application as App).container.viewModelFactory
     }
 
-    private lateinit var binding: FragmentCurrenciesBinding
+    private val binding by viewBinding(FragmentCurrenciesBinding::bind)
 
     private val adapter = CurrenciesAdapter(
         onItemClick = { item, _ ->
@@ -46,15 +45,8 @@ class CurrenciesFragment : Fragment() {
 
     private var scrollRestored = false
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_currencies, container, false)
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentCurrenciesBinding.bind(view)
 
         setupList()
         setupSystemBarsPadding()
@@ -126,10 +118,8 @@ class CurrenciesFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        if (::binding.isInitialized) {
-            (binding.currenciesList.layoutManager as? LinearLayoutManager)?.let { lm ->
-                viewModel.saveScrollPosition(lm.findFirstVisibleItemPosition())
-            }
+        (binding.currenciesList.layoutManager as? LinearLayoutManager)?.let { lm ->
+            viewModel.saveScrollPosition(lm.findFirstVisibleItemPosition())
         }
     }
 

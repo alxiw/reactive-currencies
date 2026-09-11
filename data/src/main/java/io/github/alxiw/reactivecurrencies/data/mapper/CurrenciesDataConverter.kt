@@ -1,21 +1,21 @@
-package io.github.alxiw.reactivecurrencies.data.model.util
+package io.github.alxiw.reactivecurrencies.data.mapper
 
-import io.github.alxiw.reactivecurrencies.data.network.model.CbrCurrenciesResponse
-import io.github.alxiw.reactivecurrencies.data.storage.model.CurrencyDto
-import io.github.alxiw.reactivecurrencies.data.storage.model.CurrenciesDataDto
+import io.github.alxiw.reactivecurrencies.data.local.model.CurrenciesDataDto
+import io.github.alxiw.reactivecurrencies.data.remote.model.CbrCurrenciesResponse
+import io.github.alxiw.reactivecurrencies.data.local.model.CurrencyDto
 import java.text.SimpleDateFormat
 import java.util.*
 
-private const val REMOTE_BASE_CURRENCY = "RUB"
-private const val REMOTE_BASE_VALUE = "1.0"
-
 object CurrenciesDataConverter {
+
+    private const val REMOTE_BASE_CURRENCY = "RUB"
+    private const val REMOTE_BASE_VALUE = "1.0"
 
     private val format = SimpleDateFormat("dd.MM.yyyy", Locale.ROOT)
 
-    fun fromResponseToRoom(input: CbrCurrenciesResponse): CurrenciesDataDto {
+    fun fromResponseToDto(input: CbrCurrenciesResponse): CurrenciesDataDto {
         val date = input.date ?: format.format(Date(System.currentTimeMillis()))
-        val list = input.list ?: emptyList<CbrCurrenciesResponse.Currency>()
+        val list = input.list ?: emptyList()
         val set = list
             .map { item -> CurrencyDto(item.charCode!!, formatRate(item.rate!!)) }
             .toMutableSet()

@@ -1,6 +1,7 @@
-package io.github.alxiw.reactivecurrencies.data.storage
+package io.github.alxiw.reactivecurrencies.data.local
 
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 class CurrencySharedPreferences(private val sharedPreferences: SharedPreferences) {
 
@@ -14,20 +15,20 @@ class CurrencySharedPreferences(private val sharedPreferences: SharedPreferences
     }
 
     fun saveBaseCurrency(code: String, value: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString(PREF_KEY_BASE_CURRENCY, code)
-        editor.putString(PREF_KEY_BASE_VALUE, value)
-        editor.apply()
+        sharedPreferences.edit {
+            putString(PREF_KEY_BASE_CURRENCY, code)
+            putString(PREF_KEY_BASE_VALUE, value)
+        }
     }
 
     fun loadBaseCurrency(): Pair<String, String> {
         val name = sharedPreferences.getString(PREF_KEY_BASE_CURRENCY, DEFAULT_BASE_CURRENCY) ?: DEFAULT_BASE_CURRENCY
         val value = sharedPreferences.getString(PREF_KEY_BASE_VALUE, DEFAULT_BASE_VALUE) ?: DEFAULT_BASE_VALUE
-        return Pair<String, String>(name, value)
+        return Pair(name, value)
     }
 
     fun saveUpdateDate(date: String) {
-        sharedPreferences.edit().apply { putString(PREF_KEY_UPDATE_DATE, date) }.apply()
+        sharedPreferences.edit { putString(PREF_KEY_UPDATE_DATE, date) }
     }
 
     fun loadUpdateDate(): String? {

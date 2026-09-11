@@ -7,6 +7,7 @@ core = "1.19.0"
 material = "1.14.0"
 fragment = "1.9.0"
 viewmodel = "2.11.0"
+viewbindingdelegate = "2.0.4"
 recyclerview = "1.4.0"
 swiperefreshlayout = "1.2.0"
 splashscreen = "1.2.0"
@@ -24,6 +25,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+viewbindingdelegate = { group = "dev.androidbroadcast.vbpd", name = "vbpd", version.ref = "viewbindingdelegate" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "viewmodel" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
@@ -44,6 +46,7 @@ androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", vers
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 
 [bundles]
 project-classpath = []

@@ -1,6 +1,6 @@
-package io.github.alxiw.reactivecurrencies.data.network
+package io.github.alxiw.reactivecurrencies.data.remote
 
-import io.github.alxiw.reactivecurrencies.data.network.model.CbrCurrenciesResponse
+import io.github.alxiw.reactivecurrencies.data.remote.model.CbrCurrenciesResponse
 import io.reactivex.rxjava3.core.Single
 import retrofit2.http.GET
 

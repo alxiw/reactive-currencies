@@ -7,3 +7,4 @@ pluginManagement {
 }
 rootProject.name = "Reactive Currencies"
 include(":app")
+include(":data")

@@ -1,15 +1,14 @@
-package io.github.alxiw.reactivecurrencies.data.network
+package io.github.alxiw.reactivecurrencies.data.remote
 
-import io.github.alxiw.reactivecurrencies.data.network.model.CbrCurrenciesResponse
-import io.github.alxiw.reactivecurrencies.data.model.util.CurrenciesDataConverter
-import io.github.alxiw.reactivecurrencies.data.storage.model.CurrenciesDataDto
+import io.github.alxiw.reactivecurrencies.data.local.model.CurrenciesDataDto
+import io.github.alxiw.reactivecurrencies.data.mapper.CurrenciesDataConverter
 import io.reactivex.rxjava3.core.Single
 
 class RemoteDataSource(private val apiService: CbrApiService) {
 
     fun updateCurrenciesData(): Single<CurrenciesDataDto> {
         return apiService.getCbrCurrencies()
-            .flatMap<CbrCurrenciesResponse> { response ->
+            .flatMap { response ->
                 val date = !response.date.isNullOrBlank()
                 val list = !response.list.isNullOrEmpty()
                 val content = !response.list!!.any {
@@ -18,12 +17,11 @@ class RemoteDataSource(private val apiService: CbrApiService) {
                 if (date && list && content) {
                     Single.just(response)
                 } else {
-                    val e = RuntimeException("missing required fields")
-                    Single.error<CbrCurrenciesResponse>(e)
+                    Single.error(RuntimeException("missing required fields"))
                 }
             }
             .map { response ->
-                CurrenciesDataConverter.fromResponseToRoom(response)
+                CurrenciesDataConverter.fromResponseToDto(response)
             }
     }
 }

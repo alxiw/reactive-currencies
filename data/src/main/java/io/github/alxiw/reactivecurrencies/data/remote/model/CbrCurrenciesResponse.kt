@@ -1,6 +1,6 @@
-package io.github.alxiw.reactivecurrencies.data.network.model
+package io.github.alxiw.reactivecurrencies.data.remote.model
 
-import io.github.alxiw.reactivecurrencies.data.network.model.CbrCurrenciesResponse.Currency
+import io.github.alxiw.reactivecurrencies.data.remote.model.CbrCurrenciesResponse.Currency
 import org.simpleframework.xml.Attribute
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.ElementList

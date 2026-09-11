@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.data.storage.model
+package io.github.alxiw.reactivecurrencies.data.local.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

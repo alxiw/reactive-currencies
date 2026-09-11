@@ -1,8 +1,8 @@
-package io.github.alxiw.reactivecurrencies.data.storage
+package io.github.alxiw.reactivecurrencies.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import io.github.alxiw.reactivecurrencies.data.storage.model.CurrencyDto
+import io.github.alxiw.reactivecurrencies.data.local.model.CurrencyDto
 
 @Database(
     entities = [CurrencyDto::class],

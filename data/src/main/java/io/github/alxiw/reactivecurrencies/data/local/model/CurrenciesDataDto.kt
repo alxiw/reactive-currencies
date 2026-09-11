@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.data.storage.model
+package io.github.alxiw.reactivecurrencies.data.local.model
 
 class CurrenciesDataDto(
     val date: String,

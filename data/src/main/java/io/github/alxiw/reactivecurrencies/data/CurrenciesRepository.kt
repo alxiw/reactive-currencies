@@ -1,10 +1,10 @@
 package io.github.alxiw.reactivecurrencies.data
 
 import androidx.annotation.WorkerThread
-import io.github.alxiw.reactivecurrencies.data.network.RemoteDataSource
-import io.github.alxiw.reactivecurrencies.data.storage.LocalDataSource
-import io.github.alxiw.reactivecurrencies.data.storage.CurrencySharedPreferences
+import io.github.alxiw.reactivecurrencies.data.local.CurrencySharedPreferences
+import io.github.alxiw.reactivecurrencies.data.local.LocalDataSource
 import io.github.alxiw.reactivecurrencies.data.model.Currency
+import io.github.alxiw.reactivecurrencies.data.remote.RemoteDataSource
 import io.reactivex.rxjava3.core.Single
 import java.math.BigDecimal
 

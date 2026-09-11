@@ -1,10 +1,10 @@
-package io.github.alxiw.reactivecurrencies.data.storage
+package io.github.alxiw.reactivecurrencies.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import io.github.alxiw.reactivecurrencies.data.storage.model.CurrencyDto
+import io.github.alxiw.reactivecurrencies.data.local.model.CurrencyDto
 import io.reactivex.rxjava3.core.Single
 
 @Dao
@@ -18,5 +18,4 @@ interface CurrencyDao {
 
     @Query("DELETE FROM currency")
     fun delete()
-
 }
