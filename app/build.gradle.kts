@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.alxiw.reactivecurrencies"
-        minSdk = 23
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -38,6 +38,7 @@ dependencies {
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.fragment.ktx)

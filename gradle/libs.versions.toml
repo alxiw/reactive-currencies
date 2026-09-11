@@ -9,6 +9,7 @@ fragment = "1.9.0"
 viewmodel = "2.11.0"
 recyclerview = "1.4.0"
 swiperefreshlayout = "1.2.0"
+splashscreen = "1.2.0"
 rxjava = "3.1.12"
 rxandroid = "3.0.2"
 retrofit = "3.0.0"
@@ -21,6 +22,7 @@ espressoCore = "3.7.0"
 [libraries]
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "viewmodel" }

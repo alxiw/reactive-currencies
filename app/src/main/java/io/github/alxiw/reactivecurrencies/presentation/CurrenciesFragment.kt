@@ -1,7 +1,5 @@
 package io.github.alxiw.reactivecurrencies.presentation
 
-import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -9,7 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -41,9 +42,6 @@ class CurrenciesFragment : Fragment() {
 
     private var disposable: Disposable? = null
 
-    @SuppressLint("RestrictedApi")
-    private var savedState: LinearLayoutManager.SavedState? = null
-
     private val onItemClickListener = object : OnItemClickListener<Currency> {
         override fun onItemClick(item: Currency, position: Int) {
             viewModel.onCurrencyClick(item)
@@ -65,27 +63,6 @@ class CurrenciesFragment : Fragment() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        val lm = binding.currenciesList.layoutManager as LinearLayoutManager
-        outState.putParcelable(RECYCLER_VIEW_STATE_TAG, lm.onSaveInstanceState())
-    }
-
-    @SuppressLint("RestrictedApi")
-    private fun restoreSavedInstanceState(savedInstanceState: Bundle?) {
-        savedInstanceState ?: return
-        savedState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            savedInstanceState.getParcelable<LinearLayoutManager.SavedState>(
-                RECYCLER_VIEW_STATE_TAG,
-                LinearLayoutManager.SavedState::class.java
-            )
-        } else {
-            savedInstanceState.getParcelable<LinearLayoutManager.SavedState>(
-                RECYCLER_VIEW_STATE_TAG
-            )
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -95,7 +72,6 @@ class CurrenciesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentCurrenciesBinding.bind(view)
-        restoreSavedInstanceState(savedInstanceState)
 
         binding.currenciesProgressBar.isVisible = true
         binding.currenciesSwipeRefresh.isEnabled = false
@@ -110,6 +86,27 @@ class CurrenciesFragment : Fragment() {
                 itemClickListener = onItemClickListener
                 valueChangeLister = onValueChangeListener
             }
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            binding.currenciesList.updatePadding(
+                left = systemBars.left,
+                top = systemBars.top,
+                right = systemBars.right,
+                bottom = systemBars.bottom
+            )
+
+            val density = resources.displayMetrics.density
+            val defaultOffset = (SWIPE_REFRESH_OFFSET_DEFAULT * density).toInt()
+            binding.currenciesSwipeRefresh.setProgressViewOffset(
+                false,
+                systemBars.top,
+                systemBars.top + defaultOffset
+            )
+
+            insets
         }
 
         binding.currenciesSwipeRefresh.apply {
@@ -135,6 +132,15 @@ class CurrenciesFragment : Fragment() {
             }
 
         viewModel.getAllCurrencies(fromUi = true)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::binding.isInitialized) {
+            (binding.currenciesList.layoutManager as? LinearLayoutManager)?.let { lm ->
+                viewModel.saveScrollPosition(lm.findFirstVisibleItemPosition())
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -192,8 +198,9 @@ class CurrenciesFragment : Fragment() {
                 adapter.updateCurrencies(event.list)
 
                 if (event.useSavedState) {
-                    binding.currenciesList.layoutManager?.onRestoreInstanceState(savedState)
-                    savedState = null
+                    viewModel.restoreScrollPosition()?.let { position ->
+                        binding.currenciesList.layoutManager?.scrollToPosition(position)
+                    }
                 }
             }
             is CurrenciesViewModel.LoadEvent.ShowRefreshing -> {
@@ -217,7 +224,7 @@ class CurrenciesFragment : Fragment() {
     }
 
     companion object {
-        private const val RECYCLER_VIEW_STATE_TAG = "recycler_view_state"
+        private const val SWIPE_REFRESH_OFFSET_DEFAULT = 64
 
         @JvmStatic
         fun newInstance() = CurrenciesFragment()

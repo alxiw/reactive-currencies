@@ -1,5 +1,6 @@
 package io.github.alxiw.reactivecurrencies.presentation
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import io.github.alxiw.reactivecurrencies.data.CurrenciesRepository
 import io.github.alxiw.reactivecurrencies.data.model.Currency
@@ -10,7 +11,10 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
 
-class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository) : ViewModel() {
+class CurrenciesViewModel(
+    private val currenciesRepository: CurrenciesRepository,
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
 
     private val retryManager = NetworkRetryManager()
 
@@ -97,6 +101,12 @@ class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository
         retryManager.retry()
     }
 
+    fun saveScrollPosition(position: Int) {
+        savedStateHandle[SCROLL_POSITION_KEY] = position
+    }
+
+    fun restoreScrollPosition(): Int? = savedStateHandle[SCROLL_POSITION_KEY]
+
     fun clear() {
         compositeDisposable.clear()
     }
@@ -114,3 +124,5 @@ class CurrenciesViewModel(private val currenciesRepository: CurrenciesRepository
         data object ShowUpdatingError : LoadEvent
     }
 }
+
+private const val SCROLL_POSITION_KEY = "currencies_scroll_position"

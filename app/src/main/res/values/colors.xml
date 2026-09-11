@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#4ac2cb</color>
     <color name="colorAccent">#fadd5b</color>
 
+    <color name="colorBackground">#FFFFFF</color>
+
     <color name="shortNameTextColor">#808080</color>
     <color name="longNameTextColor">#000000</color>
     <color name="valueTextColor">#000000</color>
