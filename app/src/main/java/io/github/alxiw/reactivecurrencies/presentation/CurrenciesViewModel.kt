@@ -4,101 +4,73 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import io.github.alxiw.reactivecurrencies.data.CurrenciesRepository
 import io.github.alxiw.reactivecurrencies.data.model.Currency
-import io.github.alxiw.reactivecurrencies.data.network.NetworkRetryManager
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import io.reactivex.rxjava3.subjects.PublishSubject
+
+sealed interface CurrenciesIntent {
+    data object LoadInitial : CurrenciesIntent
+    data object Refresh : CurrenciesIntent
+    data object Retry : CurrenciesIntent
+    data class SelectCurrency(val currency: Currency) : CurrenciesIntent
+    data class ChangeValue(val currency: Currency) : CurrenciesIntent
+}
+
+data class CurrenciesUiState(
+    val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
+    val currencies: List<Currency> = emptyList(),
+) {
+    val showList: Boolean get() = currencies.isNotEmpty()
+    val showStub: Boolean get() = currencies.isEmpty() && !isLoading
+}
+
+sealed interface CurrenciesEvent {
+    data class ShowLoadingSuccess(val info: String) : CurrenciesEvent
+    data object ShowLoadingError : CurrenciesEvent
+    data object ShowUpdatingError : CurrenciesEvent
+    data object ScrollToTop : CurrenciesEvent
+}
 
 class CurrenciesViewModel(
     private val currenciesRepository: CurrenciesRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val retryManager = NetworkRetryManager()
-
     private val compositeDisposable = CompositeDisposable()
 
-    private val eventSubject = PublishSubject.create<LoadEvent>()
-    val eventObservable: Observable<LoadEvent> = eventSubject.hide()
+    private val intents = PublishSubject.create<CurrenciesIntent>()
+    private val stateSubject = BehaviorSubject.createDefault(CurrenciesUiState())
+    private val eventSubject = PublishSubject.create<CurrenciesEvent>()
 
-    fun init() {
-        val disposable = retryManager.observeRetries().subscribe {
-            triggerEvent(LoadEvent.ShowRefreshing)
-            updateAllCurrencies(fromUi = true)
-        }
-        compositeDisposable.add(disposable)
-    }
+    private var initialLoadSubmitted = false
 
-    fun getAllCurrencies(fromUi: Boolean) {
-        val disposable = currenciesRepository.getAllCurrencies()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { list ->
-                    triggerEvent(LoadEvent.ShowList(list, fromUi))
-                },
-                { error ->
-                    if (fromUi) {
-                        updateAllCurrencies(fromUi = false)
-                    } else {
-                        triggerEvent(LoadEvent.ShowStub)
-                    }
+    val state: Observable<CurrenciesUiState> = stateSubject.hide()
+    val events: Observable<CurrenciesEvent> = eventSubject.hide()
+
+    private val results: Observable<Result> = intents
+        .flatMap(::handleIntent)
+        .share()
+
+    init {
+        compositeDisposable.add(
+            results
+                .scan(CurrenciesUiState(), ::reduce)
+                .distinctUntilChanged()
+                .subscribe(stateSubject::onNext)
+        )
+        compositeDisposable.add(
+            results
+                .subscribe { result ->
+                    toEvent(result)?.let(eventSubject::onNext)
                 }
-            )
-        compositeDisposable.add(disposable)
+        )
     }
 
-    fun updateAllCurrencies(fromUi: Boolean) {
-        val disposable = currenciesRepository.updateAllCurrencies()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { info ->
-                    getAllCurrencies(fromUi = false)
-                    triggerEvent(LoadEvent.ShowLoadingSuccess(info))
-                },
-                { error ->
-                    if (!fromUi) triggerEvent(LoadEvent.ShowStub)
-                    triggerEvent(LoadEvent.ShowLoadingError)
-                }
-            )
-        compositeDisposable.add(disposable)
-    }
-
-    fun onCurrencyClick(newBaseCurrency: Currency) {
-        val disposable = currenciesRepository.changeBaseCurrency(newBaseCurrency)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { list ->
-                    triggerEvent(LoadEvent.ShowList(list, false))
-                },
-                { error ->
-                    triggerEvent(LoadEvent.ShowUpdatingError)
-                }
-            )
-        compositeDisposable.add(disposable)
-    }
-
-    fun onValueChange(baseItem: Currency) {
-        val disposable = currenciesRepository.changeValue(baseItem)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { list ->
-                    triggerEvent(LoadEvent.ShowList(list, false))
-                },
-                { error ->
-                    triggerEvent(LoadEvent.ShowUpdatingError)
-                }
-            )
-        compositeDisposable.add(disposable)
-    }
-
-    fun retryCall() {
-        retryManager.retry()
+    fun submit(intent: CurrenciesIntent) {
+        intents.onNext(intent)
     }
 
     fun saveScrollPosition(position: Int) {
@@ -107,21 +79,107 @@ class CurrenciesViewModel(
 
     fun restoreScrollPosition(): Int? = savedStateHandle[SCROLL_POSITION_KEY]
 
-    fun clear() {
-        compositeDisposable.clear()
+    override fun onCleared() {
+        compositeDisposable.dispose()
     }
 
-    private fun triggerEvent(event: LoadEvent) {
-        eventSubject.onNext(event)
+    private fun handleIntent(intent: CurrenciesIntent): Observable<Result> = when (intent) {
+        is CurrenciesIntent.LoadInitial -> {
+            if (initialLoadSubmitted) {
+                // already loaded or loading — no need to reload on configuration change
+                Observable.empty()
+            } else {
+                initialLoadSubmitted = true
+                loadInitial().startWithItem(Result.Loading)
+            }
+        }
+        is CurrenciesIntent.Refresh,
+        is CurrenciesIntent.Retry -> refresh().startWithItem(Result.Refreshing)
+        is CurrenciesIntent.SelectCurrency -> changeBaseCurrency(intent.currency)
+        is CurrenciesIntent.ChangeValue -> changeValue(intent.currency)
     }
 
-    sealed interface LoadEvent {
-        data object ShowStub : LoadEvent
-        data object ShowLoadingError : LoadEvent
-        data class ShowLoadingSuccess(val info: String) : LoadEvent
-        data class ShowList(val list: List<Currency>, val useSavedState: Boolean) : LoadEvent
-        data object ShowRefreshing : LoadEvent
-        data object ShowUpdatingError : LoadEvent
+    private fun loadInitial(): Observable<Result> =
+        currenciesRepository.getAllCurrencies()
+            .map<Result> { Result.DataLoaded(it, null) }
+            .onErrorResumeNext {
+                currenciesRepository.updateAllCurrencies()
+                    .flatMap { info ->
+                        currenciesRepository.getAllCurrencies()
+                            .map { list -> Result.DataLoaded(list, info) as Result }
+                    }
+                    .onErrorReturn { Result.LoadFailed as Result }
+            }
+            .toObservable()
+            .subscribeOn(Schedulers.io())
+
+    private fun refresh(): Observable<Result> =
+        currenciesRepository.updateAllCurrencies()
+            .flatMap { info ->
+                currenciesRepository.getAllCurrencies()
+                    .map { list -> Result.DataLoaded(list, info) as Result }
+            }
+            .onErrorReturn { Result.RefreshFailed as Result }
+            .toObservable()
+            .subscribeOn(Schedulers.io())
+
+    private fun changeBaseCurrency(currency: Currency): Observable<Result> =
+        currenciesRepository.changeBaseCurrency(currency)
+            .map<Result> { Result.BaseCurrencyChanged(it) }
+            .toObservable()
+            .onErrorReturn { Result.UpdateFailed }
+            .subscribeOn(Schedulers.io())
+
+    private fun changeValue(currency: Currency): Observable<Result> =
+        currenciesRepository.changeValue(currency)
+            .map<Result> { Result.CurrenciesUpdated(it) }
+            .toObservable()
+            .onErrorReturn { Result.UpdateFailed }
+            .subscribeOn(Schedulers.io())
+
+    private fun reduce(state: CurrenciesUiState, result: Result): CurrenciesUiState = when (result) {
+        is Result.Loading -> state.copy(isLoading = true, isRefreshing = false)
+        is Result.Refreshing -> state.copy(isRefreshing = true)
+        is Result.DataLoaded -> state.copy(
+            isLoading = false,
+            isRefreshing = false,
+            currencies = result.list
+        )
+        is Result.LoadFailed -> state.copy(isLoading = false, isRefreshing = false)
+        is Result.RefreshFailed -> state.copy(isRefreshing = false)
+        is Result.BaseCurrencyChanged -> state.copy(
+            isLoading = false,
+            isRefreshing = false,
+            currencies = result.list
+        )
+        is Result.CurrenciesUpdated -> state.copy(
+            isLoading = false,
+            isRefreshing = false,
+            currencies = result.list
+        )
+        is Result.UpdateFailed -> state.copy(isRefreshing = false)
+    }
+
+    private fun toEvent(result: Result): CurrenciesEvent? = when (result) {
+        is Result.DataLoaded -> result.info?.let { CurrenciesEvent.ShowLoadingSuccess(it) }
+        is Result.LoadFailed,
+        is Result.RefreshFailed -> CurrenciesEvent.ShowLoadingError
+        is Result.UpdateFailed -> CurrenciesEvent.ShowUpdatingError
+        is Result.BaseCurrencyChanged -> CurrenciesEvent.ScrollToTop
+        is Result.Loading,
+        is Result.Refreshing,
+        is Result.CurrenciesUpdated -> null
+    }
+
+    private sealed interface Result {
+        data object Loading : Result
+        data object Refreshing : Result
+        data class DataLoaded(val list: List<Currency>, val info: String?) : Result
+        data object LoadFailed : Result
+        data object RefreshFailed : Result
+        data class BaseCurrencyChanged(val list: List<Currency>) : Result
+        data class CurrenciesUpdated(val list: List<Currency>) : Result
+        data object UpdateFailed : Result
     }
 }
 

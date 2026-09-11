@@ -4,19 +4,20 @@
     <color name="colorPrimaryDark">#4ac2cb</color>
     <color name="colorAccent">#fadd5b</color>
 
-    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorBackground">#ffffff</color>
 
-    <color name="shortNameTextColor">#808080</color>
-    <color name="longNameTextColor">#000000</color>
-    <color name="valueTextColor">#000000</color>
-    <color name="signTextColor">#808080</color>
+    <color name="colorTextPrimary">#000000</color>
+    <color name="colorTextSecondary">#808080</color>
 
-    <color name="snackbarBackgroundColor">#808080</color>
-    <color name="nothingFoundTextColor">#808080</color>
+    <color name="shortNameTextColor">@color/colorTextSecondary</color>
+    <color name="longNameTextColor">@color/colorTextPrimary</color>
+    <color name="valueTextColor">@color/colorTextPrimary</color>
+    <color name="signTextColor">@color/colorTextSecondary</color>
 
-    <color name="colorNightDark">#212326</color>
+    <color name="snackbarBackgroundColor">@color/colorTextSecondary</color>
+    <color name="nothingFoundTextColor">@color/colorTextSecondary</color>
 
-    <color name="swipeRefreshBackground">#FFFFFF</color>
+    <color name="swipeRefreshBackground">@color/colorBackground</color>
     <color name="swipeRefreshProgressOne">@color/colorAccent</color>
     <color name="swipeRefreshProgressTwo">@color/colorPrimary</color>
 </resources>

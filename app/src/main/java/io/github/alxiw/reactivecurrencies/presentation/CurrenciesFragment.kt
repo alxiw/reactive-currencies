@@ -1,8 +1,6 @@
 package io.github.alxiw.reactivecurrencies.presentation
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,16 +14,16 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.github.alxiw.reactivecurrencies.R
-import io.github.alxiw.reactivecurrencies.presentation.recycler.CurrenciesAdapter
-import io.github.alxiw.reactivecurrencies.data.model.Currency
-import io.github.alxiw.reactivecurrencies.presentation.listeners.OnItemClickListener
-import io.github.alxiw.reactivecurrencies.presentation.listeners.OnValueChangeListener
 import com.google.android.material.snackbar.Snackbar
 import io.github.alxiw.reactivecurrencies.App
+import io.github.alxiw.reactivecurrencies.R
+import io.github.alxiw.reactivecurrencies.data.model.Currency
 import io.github.alxiw.reactivecurrencies.databinding.FragmentCurrenciesBinding
+import io.github.alxiw.reactivecurrencies.presentation.listeners.OnItemClickListener
+import io.github.alxiw.reactivecurrencies.presentation.listeners.OnValueChangeListener
+import io.github.alxiw.reactivecurrencies.presentation.recycler.CurrenciesAdapter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import java.math.BigDecimal
 
 class CurrenciesFragment : Fragment() {
@@ -36,20 +34,17 @@ class CurrenciesFragment : Fragment() {
 
     private lateinit var binding: FragmentCurrenciesBinding
 
-    private var adapter = CurrenciesAdapter()
+    private val adapter = CurrenciesAdapter()
+
+    private val disposables = CompositeDisposable()
 
     private var snackBar: Snackbar? = null
 
-    private var disposable: Disposable? = null
+    private var scrollRestored = false
 
     private val onItemClickListener = object : OnItemClickListener<Currency> {
         override fun onItemClick(item: Currency, position: Int) {
-            viewModel.onCurrencyClick(item)
-            val looper = Looper.getMainLooper()
-            Handler(looper).postDelayed(
-                { binding.currenciesList.smoothScrollToPosition(0) },
-                500
-            )
+            viewModel.submit(CurrenciesIntent.SelectCurrency(item))
         }
     }
 
@@ -59,7 +54,7 @@ class CurrenciesFragment : Fragment() {
             value: BigDecimal,
             position: Int
         ) {
-            viewModel.onValueChange(Currency(item.code, value, true))
+            viewModel.submit(CurrenciesIntent.ChangeValue(Currency(item.code, value, true)))
         }
     }
 
@@ -73,12 +68,28 @@ class CurrenciesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentCurrenciesBinding.bind(view)
 
-        binding.currenciesProgressBar.isVisible = true
-        binding.currenciesSwipeRefresh.isEnabled = false
+        setupList()
+        setupSystemBarsPadding()
+        setupSwipeRefresh()
 
+        disposables.add(
+            viewModel.state
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(::render)
+        )
+        disposables.add(
+            viewModel.events
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(::handleEvent)
+        )
+
+        viewModel.submit(CurrenciesIntent.LoadInitial)
+    }
+
+    private fun setupList() {
         binding.currenciesList.also {
             it.setHasFixedSize(true)
-            val lm = LinearLayoutManager(requireContext())
+            val lm = LinearLayoutManager(context)
             it.layoutManager = lm
             it.addItemDecoration(DividerItemDecoration(activity, lm.orientation))
             it.itemAnimator = DefaultItemAnimator()
@@ -87,10 +98,12 @@ class CurrenciesFragment : Fragment() {
                 valueChangeLister = onValueChangeListener
             }
         }
+    }
 
+    private fun setupSystemBarsPadding() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            
+
             binding.currenciesList.updatePadding(
                 left = systemBars.left,
                 top = systemBars.top,
@@ -108,7 +121,9 @@ class CurrenciesFragment : Fragment() {
 
             insets
         }
+    }
 
+    private fun setupSwipeRefresh() {
         binding.currenciesSwipeRefresh.apply {
             setProgressBackgroundColorSchemeResource(
                 R.color.swipeRefreshBackground
@@ -119,19 +134,9 @@ class CurrenciesFragment : Fragment() {
             )
             setOnRefreshListener {
                 snackBar?.dismiss()
-                viewModel.updateAllCurrencies(fromUi = true)
+                viewModel.submit(CurrenciesIntent.Refresh)
             }
         }
-
-        viewModel.init()
-
-        disposable = viewModel.eventObservable
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { event ->
-                handleEvent(event)
-            }
-
-        viewModel.getAllCurrencies(fromUi = true)
     }
 
     override fun onStop() {
@@ -144,82 +149,80 @@ class CurrenciesFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        disposable?.dispose()
-        viewModel.clear()
+        disposables.dispose()
         super.onDestroyView()
     }
 
-    private fun handleEvent(event: CurrenciesViewModel.LoadEvent) {
-        when (event) {
-            is CurrenciesViewModel.LoadEvent.ShowStub -> {
-                binding.currenciesSwipeRefresh.isEnabled = true
-                binding.currenciesSwipeRefresh.isRefreshing = false
+    private fun render(state: CurrenciesUiState) {
+        binding.currenciesProgressBar.isVisible = state.isLoading
+        binding.currenciesList.isVisible = state.showList
 
-                binding.currenciesStub.inflate()
+        binding.currenciesSwipeRefresh.isEnabled = state.showList || state.showStub
+        binding.currenciesSwipeRefresh.isRefreshing = state.isRefreshing
+        if (state.isRefreshing) {
+            snackBar?.dismiss()
+        }
 
-                binding.currenciesList.isVisible = false
-                binding.currenciesProgressBar.isVisible = false
-                binding.currenciesStub.isVisible = true
-            }
-            is CurrenciesViewModel.LoadEvent.ShowLoadingError -> {
-                binding.currenciesSwipeRefresh.isEnabled = true
-                binding.currenciesSwipeRefresh.isRefreshing = false
-
-                snackBar = Snackbar.make(
-                    binding.currenciesSwipeRefresh,
-                    getString(R.string.error_loading),
-                    Snackbar.LENGTH_INDEFINITE
-                )
-                snackBar?.view?.setBackgroundColor(
-                    ContextCompat.getColor(requireContext(), R.color.snackbarBackgroundColor)
-                )
-                snackBar?.setAction(getString(R.string.retry)) { viewModel.retryCall() }?.show()
-            }
-            is CurrenciesViewModel.LoadEvent.ShowLoadingSuccess -> {
-                snackBar?.dismiss()
-                snackBar = Snackbar.make(
-                    binding.currenciesList,
-                    String.format(getString(R.string.success_loading), event.info),
-                    Snackbar.LENGTH_SHORT
-                )
-                snackBar?.view?.setBackgroundColor(
-                    ContextCompat.getColor(requireContext(), R.color.snackbarBackgroundColor)
-                )
-                snackBar?.show()
-            }
-            is CurrenciesViewModel.LoadEvent.ShowList -> {
-                binding.currenciesSwipeRefresh.isEnabled = true
-                binding.currenciesSwipeRefresh.isRefreshing = false
-
-                binding.currenciesList.isVisible = true
-                binding.currenciesProgressBar.isVisible = false
-                binding.currenciesStub.isVisible = false
-
-                adapter.updateCurrencies(event.list)
-
-                if (event.useSavedState) {
-                    viewModel.restoreScrollPosition()?.let { position ->
-                        binding.currenciesList.layoutManager?.scrollToPosition(position)
-                    }
+        if (state.showList) {
+            adapter.updateCurrencies(state.currencies)
+            if (!scrollRestored) {
+                scrollRestored = true
+                viewModel.restoreScrollPosition()?.let { position ->
+                    binding.currenciesList.layoutManager?.scrollToPosition(position)
                 }
             }
-            is CurrenciesViewModel.LoadEvent.ShowRefreshing -> {
-                binding.currenciesSwipeRefresh.isEnabled = true
-                binding.currenciesSwipeRefresh.isRefreshing = true
+        }
 
-                snackBar?.dismiss()
-            }
-            is CurrenciesViewModel.LoadEvent.ShowUpdatingError -> {
-                snackBar = Snackbar.make(
-                    binding.currenciesList,
-                    getString(R.string.error_updating),
-                    Snackbar.LENGTH_SHORT
+        binding.currenciesStub.isVisible = state.showStub
+    }
+
+    private fun handleEvent(event: CurrenciesEvent) {
+        when (event) {
+            is CurrenciesEvent.ShowLoadingSuccess -> {
+                showSnackBar(
+                    anchor = binding.currenciesList,
+                    message = String.format(getString(R.string.success_loading), event.info),
+                    duration = Snackbar.LENGTH_SHORT
                 )
-                snackBar?.view?.setBackgroundColor(
-                    ContextCompat.getColor(requireContext(), R.color.snackbarBackgroundColor)
-                )
-                snackBar?.show()
             }
+            is CurrenciesEvent.ShowLoadingError -> {
+                showSnackBar(
+                    anchor = binding.currenciesSwipeRefresh,
+                    message = getString(R.string.error_loading),
+                    duration = Snackbar.LENGTH_INDEFINITE,
+                    actionText = getString(R.string.retry),
+                    action = { viewModel.submit(CurrenciesIntent.Retry) }
+                )
+            }
+            is CurrenciesEvent.ShowUpdatingError -> {
+                showSnackBar(
+                    anchor = binding.currenciesList,
+                    message = getString(R.string.error_updating),
+                    duration = Snackbar.LENGTH_SHORT
+                )
+            }
+            is CurrenciesEvent.ScrollToTop -> {
+                binding.currenciesList.smoothScrollToPosition(0)
+            }
+        }
+    }
+
+    private fun showSnackBar(
+        anchor: View,
+        message: String,
+        duration: Int,
+        actionText: String? = null,
+        action: (() -> Unit)? = null
+    ) {
+        snackBar?.dismiss()
+        snackBar = Snackbar.make(anchor, message, duration).apply {
+            view.setBackgroundColor(
+                ContextCompat.getColor(requireContext(), R.color.snackbarBackgroundColor)
+            )
+            if (actionText != null && action != null) {
+                setAction(actionText) { action() }
+            }
+            show()
         }
     }
 

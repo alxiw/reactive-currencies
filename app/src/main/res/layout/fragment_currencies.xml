@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/currencies_swipe_refresh"
     android:layout_width="match_parent"
@@ -19,13 +20,18 @@
             android:clipToPadding="false"
             tools:listitem="@layout/item_currency" />
 
-        <ViewStub
+        <TextView
             android:id="@+id/currencies_stub"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inflatedId="@+id/panel_import"
-            android:layout="@layout/layout_stub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawablePadding="16dp"
+            android:gravity="center"
+            android:text="@string/nothing_found"
+            android:textColor="@color/nothingFoundTextColor"
+            android:textSize="16sp"
             android:visibility="gone"
+            app:drawableTopCompat="@drawable/ic_nothing_found"
             tools:visibility="visible" />
 
         <ProgressBar
@@ -38,4 +44,5 @@
             tools:visibility="visible" />
 
     </FrameLayout>
+
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
