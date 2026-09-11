@@ -11,15 +11,16 @@ import io.github.alxiw.reactivecurrencies.databinding.ItemBaseCurrencyBinding
 import io.github.alxiw.reactivecurrencies.databinding.ItemCurrencyBinding
 import io.github.alxiw.reactivecurrencies.data.model.Currency
 import io.github.alxiw.reactivecurrencies.presentation.util.CurrencyUtil
-import io.github.alxiw.reactivecurrencies.presentation.listeners.OnItemClickListener
-import io.github.alxiw.reactivecurrencies.presentation.listeners.OnValueChangeListener
 import io.github.alxiw.reactivecurrencies.presentation.view.CurrencyTextWatcher
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
-class CurrenciesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class CurrenciesAdapter(
+    private val onItemClick: (Currency, Int) -> Unit,
+    private val onValueChanged: (Currency, BigDecimal, Int) -> Unit
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
         private enum class CurrencyViewType {
@@ -34,9 +35,6 @@ class CurrenciesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private lateinit var bindingBase: ItemBaseCurrencyBinding
     private lateinit var bindingCommon: ItemCurrencyBinding
-
-    var itemClickListener: OnItemClickListener<Currency>? = null
-    var valueChangeLister: OnValueChangeListener<Currency, BigDecimal>? = null
 
     override fun getItemCount() = currencies.size
 
@@ -69,7 +67,7 @@ class CurrenciesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 view.setOnClickListener {
                     val adapterPosition = viewHolder.getBindingAdapterPosition()
                     if (adapterPosition != NO_POSITION) {
-                        itemClickListener?.onItemClick(currencies[adapterPosition], adapterPosition)
+                        onItemClick(currencies[adapterPosition], adapterPosition)
                     }
                 }
 
@@ -142,7 +140,7 @@ class CurrenciesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 .debounce(1, TimeUnit.SECONDS)
                 .distinctUntilChanged()
                 .doOnNext {
-                    valueChangeLister?.onValueChanged(currencies[0], it ?: BigDecimal.ONE, 0)
+                    onValueChanged(currencies[0], it, 0)
                 }
                 .subscribe()
         }

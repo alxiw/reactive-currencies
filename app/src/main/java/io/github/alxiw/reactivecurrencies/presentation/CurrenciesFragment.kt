@@ -19,12 +19,9 @@ import io.github.alxiw.reactivecurrencies.App
 import io.github.alxiw.reactivecurrencies.R
 import io.github.alxiw.reactivecurrencies.data.model.Currency
 import io.github.alxiw.reactivecurrencies.databinding.FragmentCurrenciesBinding
-import io.github.alxiw.reactivecurrencies.presentation.listeners.OnItemClickListener
-import io.github.alxiw.reactivecurrencies.presentation.listeners.OnValueChangeListener
 import io.github.alxiw.reactivecurrencies.presentation.recycler.CurrenciesAdapter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import java.math.BigDecimal
 
 class CurrenciesFragment : Fragment() {
 
@@ -34,29 +31,20 @@ class CurrenciesFragment : Fragment() {
 
     private lateinit var binding: FragmentCurrenciesBinding
 
-    private val adapter = CurrenciesAdapter()
+    private val adapter = CurrenciesAdapter(
+        onItemClick = { item, _ ->
+            viewModel.submit(CurrenciesIntent.SelectCurrency(item))
+        },
+        onValueChanged = { item, value, _ ->
+            viewModel.submit(CurrenciesIntent.ChangeValue(Currency(item.code, value, true)))
+        }
+    )
 
     private val disposables = CompositeDisposable()
 
     private var snackBar: Snackbar? = null
 
     private var scrollRestored = false
-
-    private val onItemClickListener = object : OnItemClickListener<Currency> {
-        override fun onItemClick(item: Currency, position: Int) {
-            viewModel.submit(CurrenciesIntent.SelectCurrency(item))
-        }
-    }
-
-    private val onValueChangeListener = object : OnValueChangeListener<Currency, BigDecimal> {
-        override fun onValueChanged(
-            item: Currency,
-            value: BigDecimal,
-            position: Int
-        ) {
-            viewModel.submit(CurrenciesIntent.ChangeValue(Currency(item.code, value, true)))
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -93,10 +81,7 @@ class CurrenciesFragment : Fragment() {
             it.layoutManager = lm
             it.addItemDecoration(DividerItemDecoration(activity, lm.orientation))
             it.itemAnimator = DefaultItemAnimator()
-            it.adapter = adapter.apply {
-                itemClickListener = onItemClickListener
-                valueChangeLister = onValueChangeListener
-            }
+            it.adapter = adapter
         }
     }
 
