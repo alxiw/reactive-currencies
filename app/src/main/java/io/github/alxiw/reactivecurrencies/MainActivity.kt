@@ -1,26 +1,29 @@
 package io.github.alxiw.reactivecurrencies
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import io.github.alxiw.reactivecurrencies.databinding.ActivityMainBinding
-import io.github.alxiw.reactivecurrencies.presentation.CurrenciesFragment
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.alxiw.reactivecurrencies.presentation.CurrenciesScreen
+import io.github.alxiw.reactivecurrencies.presentation.CurrenciesViewModel
+import io.github.alxiw.reactivecurrencies.presentation.di.AppContainer
+import io.github.alxiw.reactivecurrencies.presentation.theme.CurrenciesTheme
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
+class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        savedInstanceState ?: supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.main_container, CurrenciesFragment.newInstance())
-            .commit()
+        setContent {
+            CurrenciesTheme {
+                val viewModel: CurrenciesViewModel = viewModel(
+                    factory = (application as AppContainer).viewModelFactory,
+                )
+                CurrenciesScreen(viewModel = viewModel)
+            }
+        }
     }
 }

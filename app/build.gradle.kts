@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.ksp)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -30,7 +31,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    buildFeatures.viewBinding = true
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {
@@ -44,6 +47,14 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.material)
+
+    // Compose
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
