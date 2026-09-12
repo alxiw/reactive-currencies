@@ -36,21 +36,14 @@ android {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation(project(":data"))
+    implementation(project(":presentation"))
     implementation(project(":domain"))
+    implementation(project(":data"))
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.material)
-    implementation(libs.viewbindingdelegate)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.fragment.ktx)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.swiperefreshlayout)
-
-    implementation(libs.rxjava)
-    implementation(libs.rxandroid)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

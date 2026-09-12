@@ -8,10 +8,7 @@ import io.github.alxiw.reactivecurrencies.domain.usecase.ChangeValueUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCurrenciesUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.UpdateCurrenciesUseCase
 import io.github.alxiw.reactivecurrencies.presentation.CurrenciesViewModelFactory
-
-interface AppContainer {
-    val viewModelFactory: CurrenciesViewModelFactory
-}
+import io.github.alxiw.reactivecurrencies.presentation.di.AppContainer
 
 class DefaultAppContainer(context: Context) : AppContainer {
 

@@ -1,0 +1,7 @@
+<resources>
+    <string name="retry">Retry</string>
+    <string name="success_loading">Currencies updated: %s</string>
+    <string name="error_loading">Loading error</string>
+    <string name="error_updating">Updating error</string>
+    <string name="nothing_found">Nothing found</string>
+</resources>

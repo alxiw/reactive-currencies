@@ -1,11 +1,11 @@
-package io.github.alxiw.reactivecurrencies.presentation
+package io.github.alxiw.reactivecurrencies
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import io.github.alxiw.reactivecurrencies.R
 import io.github.alxiw.reactivecurrencies.databinding.ActivityMainBinding
+import io.github.alxiw.reactivecurrencies.presentation.CurrenciesFragment
 
 class MainActivity : AppCompatActivity() {
 

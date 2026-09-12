@@ -1,6 +1,7 @@
-package io.github.alxiw.reactivecurrencies.presentation.util
+package io.github.alxiw.reactivecurrencies.presentation.adapter
 
-import java.util.*
+import java.util.Currency
+import java.util.Locale
 
 object CurrencyUtil {
 

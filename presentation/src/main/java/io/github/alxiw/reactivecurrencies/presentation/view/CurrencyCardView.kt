@@ -14,7 +14,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
-import io.github.alxiw.reactivecurrencies.R
+import io.github.alxiw.reactivecurrencies.presentation.R
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*

@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.domain
+package io.github.alxiw.reactivecurrencies.presentation
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("io.github.alxiw.reactivecurrencies.domain.test", appContext.packageName)
+        assertEquals("io.github.alxiw.reactivecurrencies.presentation.test", appContext.packageName)
     }
 }

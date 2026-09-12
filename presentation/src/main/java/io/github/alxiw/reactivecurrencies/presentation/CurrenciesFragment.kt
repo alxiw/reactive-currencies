@@ -14,18 +14,17 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import dev.androidbroadcast.vbpd.viewBinding
-import io.github.alxiw.reactivecurrencies.App
-import io.github.alxiw.reactivecurrencies.R
+import io.github.alxiw.reactivecurrencies.presentation.di.AppContainer
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
-import io.github.alxiw.reactivecurrencies.databinding.FragmentCurrenciesBinding
-import io.github.alxiw.reactivecurrencies.presentation.recycler.CurrenciesAdapter
+import io.github.alxiw.reactivecurrencies.presentation.databinding.FragmentCurrenciesBinding
+import io.github.alxiw.reactivecurrencies.presentation.adapter.CurrenciesAdapter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class CurrenciesFragment : Fragment(R.layout.fragment_currencies) {
 
     private val viewModel: CurrenciesViewModel by viewModels {
-        (requireActivity().application as App).container.viewModelFactory
+        (requireActivity().application as AppContainer).viewModelFactory
     }
 
     private val binding by viewBinding(FragmentCurrenciesBinding::bind)

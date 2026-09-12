@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.presentation.recycler
+package io.github.alxiw.reactivecurrencies.presentation.adapter
 
 import androidx.recyclerview.widget.DiffUtil
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
@@ -24,7 +24,7 @@ class CurrenciesDiffUtil(
         return newCurrenciesList.size
     }
 
-    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any {
         return newCurrenciesList[newItemPosition].value
     }
 }

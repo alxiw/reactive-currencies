@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.presentation.recycler
+package io.github.alxiw.reactivecurrencies.presentation.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,11 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.NO_POSITION
-import io.github.alxiw.reactivecurrencies.R
-import io.github.alxiw.reactivecurrencies.databinding.ItemBaseCurrencyBinding
-import io.github.alxiw.reactivecurrencies.databinding.ItemCurrencyBinding
+import io.github.alxiw.reactivecurrencies.presentation.R
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
-import io.github.alxiw.reactivecurrencies.presentation.util.CurrencyUtil
+import io.github.alxiw.reactivecurrencies.presentation.databinding.ItemBaseCurrencyBinding
+import io.github.alxiw.reactivecurrencies.presentation.databinding.ItemCurrencyBinding
 import io.github.alxiw.reactivecurrencies.presentation.view.CurrencyTextWatcher
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
