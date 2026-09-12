@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.data.model
+package io.github.alxiw.reactivecurrencies.domain.model
 
 import java.math.BigDecimal
 

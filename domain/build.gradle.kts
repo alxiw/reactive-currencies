@@ -1,10 +1,9 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.google.ksp)
 }
 
 android {
-    namespace = "io.github.alxiw.reactivecurrencies.data"
+    namespace = "io.github.alxiw.reactivecurrencies.domain"
     compileSdk = 37
 
     defaultConfig {
@@ -16,23 +15,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
 }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-
-    implementation(project(":domain"))
-
-    // db
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.rxjava3)
-    ksp(libs.androidx.room.compiler)
-
-    // net
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.xml)
-    implementation(libs.retrofit.adapter.rxjava3)
-    implementation(libs.logging.interceptor)
+    implementation(libs.rxjava)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)

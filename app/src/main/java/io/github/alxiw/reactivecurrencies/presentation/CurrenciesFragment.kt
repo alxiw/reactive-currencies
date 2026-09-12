@@ -16,7 +16,7 @@ import com.google.android.material.snackbar.Snackbar
 import dev.androidbroadcast.vbpd.viewBinding
 import io.github.alxiw.reactivecurrencies.App
 import io.github.alxiw.reactivecurrencies.R
-import io.github.alxiw.reactivecurrencies.data.model.Currency
+import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.databinding.FragmentCurrenciesBinding
 import io.github.alxiw.reactivecurrencies.presentation.recycler.CurrenciesAdapter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers

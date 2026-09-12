@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView.NO_POSITION
 import io.github.alxiw.reactivecurrencies.R
 import io.github.alxiw.reactivecurrencies.databinding.ItemBaseCurrencyBinding
 import io.github.alxiw.reactivecurrencies.databinding.ItemCurrencyBinding
-import io.github.alxiw.reactivecurrencies.data.model.Currency
+import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.presentation.util.CurrencyUtil
 import io.github.alxiw.reactivecurrencies.presentation.view.CurrencyTextWatcher
 import io.reactivex.rxjava3.disposables.CompositeDisposable

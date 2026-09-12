@@ -1,7 +1,7 @@
 package io.github.alxiw.reactivecurrencies.data.local
 
 import androidx.annotation.WorkerThread
-import io.github.alxiw.reactivecurrencies.data.model.Currency
+import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.data.local.model.CurrencyDto
 import io.reactivex.rxjava3.core.Single
 import java.math.BigDecimal

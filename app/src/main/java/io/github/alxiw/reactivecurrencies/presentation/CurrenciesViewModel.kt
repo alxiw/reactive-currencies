@@ -2,8 +2,11 @@ package io.github.alxiw.reactivecurrencies.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import io.github.alxiw.reactivecurrencies.data.CurrenciesRepository
-import io.github.alxiw.reactivecurrencies.data.model.Currency
+import io.github.alxiw.reactivecurrencies.domain.model.Currency
+import io.github.alxiw.reactivecurrencies.domain.usecase.ChangeBaseCurrencyUseCase
+import io.github.alxiw.reactivecurrencies.domain.usecase.ChangeValueUseCase
+import io.github.alxiw.reactivecurrencies.domain.usecase.GetCurrenciesUseCase
+import io.github.alxiw.reactivecurrencies.domain.usecase.UpdateCurrenciesUseCase
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -35,7 +38,10 @@ sealed interface CurrenciesEvent {
 }
 
 class CurrenciesViewModel(
-    private val currenciesRepository: CurrenciesRepository,
+    private val getCurrenciesUseCase: GetCurrenciesUseCase,
+    private val updateCurrenciesUseCase: UpdateCurrenciesUseCase,
+    private val changeBaseCurrencyUseCase: ChangeBaseCurrencyUseCase,
+    private val changeValueUseCase: ChangeValueUseCase,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -100,12 +106,12 @@ class CurrenciesViewModel(
     }
 
     private fun loadInitial(): Observable<Result> =
-        currenciesRepository.getAllCurrencies()
+        getCurrenciesUseCase()
             .map<Result> { Result.DataLoaded(it, null) }
             .onErrorResumeNext {
-                currenciesRepository.updateAllCurrencies()
+                updateCurrenciesUseCase()
                     .flatMap { info ->
-                        currenciesRepository.getAllCurrencies()
+                        getCurrenciesUseCase()
                             .map { list -> Result.DataLoaded(list, info) as Result }
                     }
                     .onErrorReturn { Result.LoadFailed as Result }
@@ -114,9 +120,9 @@ class CurrenciesViewModel(
             .subscribeOn(Schedulers.io())
 
     private fun refresh(): Observable<Result> =
-        currenciesRepository.updateAllCurrencies()
+        updateCurrenciesUseCase()
             .flatMap { info ->
-                currenciesRepository.getAllCurrencies()
+                getCurrenciesUseCase()
                     .map { list -> Result.DataLoaded(list, info) as Result }
             }
             .onErrorReturn { Result.RefreshFailed as Result }
@@ -124,14 +130,14 @@ class CurrenciesViewModel(
             .subscribeOn(Schedulers.io())
 
     private fun changeBaseCurrency(currency: Currency): Observable<Result> =
-        currenciesRepository.changeBaseCurrency(currency)
+        changeBaseCurrencyUseCase(currency)
             .map<Result> { Result.BaseCurrencyChanged(it) }
             .toObservable()
             .onErrorReturn { Result.UpdateFailed }
             .subscribeOn(Schedulers.io())
 
     private fun changeValue(currency: Currency): Observable<Result> =
-        currenciesRepository.changeValue(currency)
+        changeValueUseCase(currency)
             .map<Result> { Result.CurrenciesUpdated(it) }
             .toObservable()
             .onErrorReturn { Result.UpdateFailed }

@@ -1,7 +1,7 @@
 package io.github.alxiw.reactivecurrencies.presentation.recycler
 
 import androidx.recyclerview.widget.DiffUtil
-import io.github.alxiw.reactivecurrencies.data.model.Currency
+import io.github.alxiw.reactivecurrencies.domain.model.Currency
 
 class CurrenciesDiffUtil(
     private val oldCurrenciesList: List<Currency>,
