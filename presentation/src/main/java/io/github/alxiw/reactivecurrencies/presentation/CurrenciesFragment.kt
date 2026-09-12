@@ -17,7 +17,7 @@ import dev.androidbroadcast.vbpd.viewBinding
 import io.github.alxiw.reactivecurrencies.presentation.di.AppContainer
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.presentation.databinding.FragmentCurrenciesBinding
-import io.github.alxiw.reactivecurrencies.presentation.adapter.CurrenciesAdapter
+import io.github.alxiw.reactivecurrencies.presentation.currency.CurrenciesAdapter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 

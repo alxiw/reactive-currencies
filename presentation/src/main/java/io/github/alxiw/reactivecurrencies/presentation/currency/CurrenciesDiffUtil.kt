@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.presentation.adapter
+package io.github.alxiw.reactivecurrencies.presentation.currency
 
 import androidx.recyclerview.widget.DiffUtil
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
