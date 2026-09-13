@@ -5,8 +5,9 @@ import android.util.Log
 import androidx.room.Room
 import io.github.alxiw.reactivecurrencies.data.CurrenciesRepository
 import io.github.alxiw.reactivecurrencies.data.local.AppDatabase
-import io.github.alxiw.reactivecurrencies.data.local.CurrencySharedPreferences
+import io.github.alxiw.reactivecurrencies.data.local.CurrencyDataStore
 import io.github.alxiw.reactivecurrencies.data.local.LocalDataSource
+import io.github.alxiw.reactivecurrencies.data.local.currencyDataStore
 import io.github.alxiw.reactivecurrencies.data.local.MIGRATION_1_2
 import io.github.alxiw.reactivecurrencies.data.remote.CbrApiService
 import io.github.alxiw.reactivecurrencies.data.remote.RemoteDataSource
@@ -19,7 +20,6 @@ import java.util.concurrent.TimeUnit
 
 private const val BASE_URL = "https://www.cbr-xml-daily.com/"
 private const val DB_NAME = "currencies.db"
-private const val PREFS_NAME = "currencies_prefs"
 
 interface DataContainer {
     val currenciesRepository: CurrenciesRepository
@@ -29,9 +29,8 @@ class DefaultDataContainer(context: Context) : DataContainer {
 
     private val applicationContext: Context = context.applicationContext
 
-    private val currencySharedPreferences: CurrencySharedPreferences by lazy {
-        val sp = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        CurrencySharedPreferences(sp)
+    private val currencyDataStore: CurrencyDataStore by lazy {
+        CurrencyDataStore(applicationContext.currencyDataStore)
     }
 
     private val apiService: CbrApiService by lazy {
@@ -72,6 +71,6 @@ class DefaultDataContainer(context: Context) : DataContainer {
     }
 
     override val currenciesRepository: CurrenciesRepository by lazy {
-        CurrenciesRepository(localDataSource, remoteDataSource, currencySharedPreferences)
+        CurrenciesRepository(localDataSource, remoteDataSource, currencyDataStore)
     }
 }

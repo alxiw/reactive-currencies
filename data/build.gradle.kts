@@ -28,6 +28,10 @@ dependencies {
     implementation(libs.androidx.room.rxjava3)
     ksp(libs.androidx.room.compiler)
 
+    // preferences
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.kotlinx.coroutines.rx3)
+
     // net
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.xml)

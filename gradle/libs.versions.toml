@@ -12,6 +12,8 @@ rxandroid = "3.0.2"
 retrofit = "3.0.0"
 logginginterceptor = "5.5.0"
 room = "2.8.5"
+datastore = "1.2.1"
+coroutinesRx3 = "1.11.0"
 composeBom = "2026.08.00"
 activityCompose = "1.13.0"
 junit = "4.13.2"
@@ -32,6 +34,8 @@ logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", ver
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-rxjava3 = { module = "androidx.room:room-rxjava3", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+kotlinx-coroutines-rx3 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-rx3", version.ref = "coroutinesRx3" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "viewmodel" }

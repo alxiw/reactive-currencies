@@ -1,36 +1,36 @@
 package io.github.alxiw.reactivecurrencies.data
 
-import androidx.annotation.WorkerThread
-import io.github.alxiw.reactivecurrencies.data.local.CurrencySharedPreferences
+import io.github.alxiw.reactivecurrencies.data.local.CurrencyDataStore
 import io.github.alxiw.reactivecurrencies.data.local.LocalDataSource
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.domain.repository.CurrenciesRepository as DomainRepository
 import io.github.alxiw.reactivecurrencies.data.remote.RemoteDataSource
 import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.rx3.await
+import kotlinx.coroutines.rx3.rxSingle
 
 class CurrenciesRepository(
     private val localDataSource: LocalDataSource,
     private val remoteDataSource: RemoteDataSource,
-    private val sharedPreferences: CurrencySharedPreferences
+    private val dataStore: CurrencyDataStore,
 ) : DomainRepository {
 
-    @WorkerThread
     override fun updateAllCurrencies(): Single<String> {
         return remoteDataSource.updateCurrenciesData()
-            .doOnSuccess {
-                localDataSource.saveCurrencyList(it.list)
-                sharedPreferences.saveUpdateDate(it.date)
+            .flatMap { data ->
+                rxSingle {
+                    localDataSource.saveCurrencyList(data.list).await()
+                    dataStore.saveUpdateDate(data.date)
+                    data.date
+                }
             }
-            .flatMap { Single.just(it.date) }
     }
 
-    @WorkerThread
     override fun getAllCurrencies(): Single<List<Currency>> {
-        val pair = sharedPreferences.loadBaseCurrency()
-        return localDataSource.calculateCurrencyList(pair.first, pair.second)
+        return rxSingle { dataStore.loadBaseCurrency() }
+            .flatMap { (code, value) -> localDataSource.calculateCurrencyList(code, value) }
     }
 
-    @WorkerThread
     override fun changeBaseCurrency(currency: Currency): Single<List<Currency>> {
         val code = currency.code
         // seed the new base with its CBR nominal (e.g. 10000 for IDR)
@@ -38,7 +38,6 @@ class CurrenciesRepository(
         return updateBaseCurrency(code, value)
     }
 
-    @WorkerThread
     override fun changeValue(baseCurrency: Currency): Single<List<Currency>> {
         val code = baseCurrency.code
         val value = baseCurrency.value.toString()
@@ -46,7 +45,7 @@ class CurrenciesRepository(
     }
 
     private fun updateBaseCurrency(code: String, value: String): Single<List<Currency>> {
-        sharedPreferences.saveBaseCurrency(code, value)
-        return localDataSource.calculateCurrencyList(code, value)
+        return rxSingle { dataStore.saveBaseCurrency(code, value) }
+            .flatMap { localDataSource.calculateCurrencyList(code, value) }
     }
 }
