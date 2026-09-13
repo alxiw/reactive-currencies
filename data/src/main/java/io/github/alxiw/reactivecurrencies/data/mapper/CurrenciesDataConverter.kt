@@ -19,17 +19,18 @@ object CurrenciesDataConverter {
     fun fromResponseToDto(input: CbrCurrenciesResponse): CurrenciesDataDto {
         val date = input.date ?: format.format(Date(System.currentTimeMillis()))
         val list = input.list ?: emptyList()
-        val set = list
-            .map { item ->
-                CurrencyDto(
-                    code = item.charCode!!,
-                    value = formatRate(item.rate!!),
-                    nominal = item.nominal?.toIntOrNull() ?: 1,
-                    name = item.name
-                )
-            }
-            .toMutableSet()
-            .apply { add(CurrencyDto(REMOTE_BASE_CURRENCY, REMOTE_BASE_VALUE, REMOTE_BASE_NOMINAL, REMOTE_BASE_NAME)) }
+        val set = list.mapNotNull { item ->
+            val code = item.charCode ?: return@mapNotNull null
+            val rate = item.rate ?: return@mapNotNull null
+            CurrencyDto(
+                code = code,
+                value = formatRate(rate),
+                nominal = item.nominal?.toIntOrNull() ?: 1,
+                name = item.name
+            )
+        }
+        .toMutableSet()
+        .apply { add(CurrencyDto(REMOTE_BASE_CURRENCY, REMOTE_BASE_VALUE, REMOTE_BASE_NOMINAL, REMOTE_BASE_NAME)) }
 
         return CurrenciesDataDto(date, set)
     }

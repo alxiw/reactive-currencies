@@ -8,19 +8,13 @@ class RemoteDataSource(private val apiService: CbrApiService) {
 
     fun updateCurrenciesData(): Single<CurrenciesDataDto> {
         return apiService.getCbrCurrencies()
-            .flatMap { response ->
-                val date = !response.date.isNullOrBlank()
-                val list = !response.list.isNullOrEmpty()
-                val content = !response.list!!.any {
-                    it.charCode.isNullOrEmpty() || it.rate.isNullOrEmpty()
-                }
-                if (date && list && content) {
-                    Single.just(response)
-                } else {
-                    Single.error(RuntimeException("missing required fields"))
-                }
-            }
             .map { response ->
+                val hasDate = !response.date.isNullOrBlank()
+                val hasList = !response.list.isNullOrEmpty()
+                val hasContent = response.list.orEmpty().all {
+                    !it.charCode.isNullOrEmpty() && !it.rate.isNullOrEmpty()
+                }
+                check(hasDate && hasList && hasContent) { "missing required fields" }
                 CurrenciesDataConverter.fromResponseToDto(response)
             }
     }
