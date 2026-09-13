@@ -7,7 +7,6 @@ import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.domain.repository.CurrenciesRepository as DomainRepository
 import io.github.alxiw.reactivecurrencies.data.remote.RemoteDataSource
 import io.reactivex.rxjava3.core.Single
-import java.math.BigDecimal
 
 class CurrenciesRepository(
     private val localDataSource: LocalDataSource,
@@ -34,7 +33,8 @@ class CurrenciesRepository(
     @WorkerThread
     override fun changeBaseCurrency(currency: Currency): Single<List<Currency>> {
         val code = currency.code
-        val value = BigDecimal.ONE.toString() // reset value of new base currency to 1.00
+        // seed the new base with its CBR nominal (e.g. 10000 for IDR)
+        val value = currency.nominal.toString()
         return updateBaseCurrency(code, value)
     }
 

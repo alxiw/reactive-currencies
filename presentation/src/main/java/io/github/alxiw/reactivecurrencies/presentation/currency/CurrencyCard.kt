@@ -92,7 +92,7 @@ fun CurrencyCard(
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                text = CurrencyUtil.getCurrencyFullName(currency.code),
+                text = CurrencyUtil.getCurrencyFullName(currency.code, currency.name),
                 fontSize = 16.sp,
                 color = LongNameColor,
                 maxLines = 1,

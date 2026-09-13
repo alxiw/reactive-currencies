@@ -8,8 +8,8 @@ object CurrencyUtil {
     private const val ASCII_OFFSET = 0x41
     private const val UNICODE_FLAG_OFFSET = 0x1F1E6
 
-    fun getCurrencyFullName(code: String): String =
-        currencyOf(code)?.getDisplayName(Locale.US) ?: code
+    fun getCurrencyFullName(code: String, name: String? = null): String =
+        currencyOf(code)?.getDisplayName(Locale.US) ?: name ?: code
 
     fun getCurrencySignBy(code: String): String =
         currencyOf(code)?.symbol ?: code

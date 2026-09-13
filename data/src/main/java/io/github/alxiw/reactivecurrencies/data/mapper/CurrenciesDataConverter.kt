@@ -8,8 +8,11 @@ import java.util.*
 
 object CurrenciesDataConverter {
 
+    // RUB is not provided by the backend explicitly, but it is default base currency
     private const val REMOTE_BASE_CURRENCY = "RUB"
     private const val REMOTE_BASE_VALUE = "1.0"
+    private const val REMOTE_BASE_NOMINAL = 100
+    private const val REMOTE_BASE_NAME = "Russian Ruble"
 
     private val format = SimpleDateFormat("dd.MM.yyyy", Locale.ROOT)
 
@@ -17,9 +20,16 @@ object CurrenciesDataConverter {
         val date = input.date ?: format.format(Date(System.currentTimeMillis()))
         val list = input.list ?: emptyList()
         val set = list
-            .map { item -> CurrencyDto(item.charCode!!, formatRate(item.rate!!)) }
+            .map { item ->
+                CurrencyDto(
+                    code = item.charCode!!,
+                    value = formatRate(item.rate!!),
+                    nominal = item.nominal?.toIntOrNull() ?: 1,
+                    name = item.name
+                )
+            }
             .toMutableSet()
-            .apply { add(CurrencyDto(REMOTE_BASE_CURRENCY, REMOTE_BASE_VALUE)) }
+            .apply { add(CurrencyDto(REMOTE_BASE_CURRENCY, REMOTE_BASE_VALUE, REMOTE_BASE_NOMINAL, REMOTE_BASE_NAME)) }
 
         return CurrenciesDataDto(date, set)
     }

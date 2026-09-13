@@ -9,7 +9,7 @@ import org.simpleframework.xml.Root
 typealias CurrencyList = ArrayList<Currency>
 
 @Root(name = "ValCurs")
-class CbrCurrenciesResponse() {
+class CbrCurrenciesResponse {
 
     @field:Attribute(name = "Date", required = true)
     var date: String? = null
@@ -21,7 +21,7 @@ class CbrCurrenciesResponse() {
     var list: CurrencyList? = null
 
     @Root(name="Valute")
-    class Currency() {
+    class Currency {
 
         @field:Attribute(name = "ID", required = false)
         var id: String? = null

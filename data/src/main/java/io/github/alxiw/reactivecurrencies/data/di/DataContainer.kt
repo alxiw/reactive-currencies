@@ -7,6 +7,7 @@ import io.github.alxiw.reactivecurrencies.data.CurrenciesRepository
 import io.github.alxiw.reactivecurrencies.data.local.AppDatabase
 import io.github.alxiw.reactivecurrencies.data.local.CurrencySharedPreferences
 import io.github.alxiw.reactivecurrencies.data.local.LocalDataSource
+import io.github.alxiw.reactivecurrencies.data.local.MIGRATION_1_2
 import io.github.alxiw.reactivecurrencies.data.remote.CbrApiService
 import io.github.alxiw.reactivecurrencies.data.remote.RemoteDataSource
 import okhttp3.OkHttpClient
@@ -61,7 +62,9 @@ class DefaultDataContainer(context: Context) : DataContainer {
     }
 
     private val appDatabase: AppDatabase by lazy {
-        Room.databaseBuilder(applicationContext, AppDatabase::class.java, DB_NAME).build()
+        Room.databaseBuilder(applicationContext, AppDatabase::class.java, DB_NAME)
+            .addMigrations(MIGRATION_1_2)
+            .build()
     }
 
     private val localDataSource: LocalDataSource by lazy {

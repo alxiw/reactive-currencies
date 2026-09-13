@@ -11,7 +11,7 @@ class CurrencySharedPreferences(private val sharedPreferences: SharedPreferences
         private const val PREF_KEY_UPDATE_DATE = "update_date"
 
         private const val DEFAULT_BASE_CURRENCY = "RUB"
-        private const val DEFAULT_BASE_VALUE = "1.00"
+        private const val DEFAULT_BASE_VALUE = "100"
     }
 
     fun saveBaseCurrency(code: String, value: String) {

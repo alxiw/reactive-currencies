@@ -10,5 +10,9 @@ data class CurrencyDto(
     @ColumnInfo(name = "code")
     val code: String,
     @ColumnInfo(name = "value")
-    val value: String
+    val value: String,
+    @ColumnInfo(name = "nominal")
+    val nominal: Int,
+    @ColumnInfo(name = "name")
+    val name: String?
 )

@@ -25,12 +25,14 @@ class LocalDataSource(private val database: AppDatabase) {
             }
             .map { list ->
                 val map = list.associate { it.code to 1.0 / it.value.toDouble() }
+                val nominals = list.associate { it.code to it.nominal }
+                val names = list.associate { it.code to it.name }
                 val parsedBaseValue = BigDecimal.valueOf(baseValue.toDouble())
                 val coefficient = map.getValue(baseCode)
 
                 map.map { (code, rate) ->
                     val value = BigDecimal.valueOf(rate / coefficient).multiply(parsedBaseValue)
-                    Currency(code, value, code == baseCode)
+                    Currency(code, value, code == baseCode, nominals.getValue(code), names.getValue(code))
                 }.sortedWith(compareBy({ !it.isBase }, { it.code }))
             }
     }
