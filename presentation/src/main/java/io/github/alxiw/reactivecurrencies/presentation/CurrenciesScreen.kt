@@ -1,14 +1,19 @@
 package io.github.alxiw.reactivecurrencies.presentation
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -16,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -24,6 +30,8 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +42,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -51,12 +58,6 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
-
-private val DividerColor = Color(0x1F000000)
-private val NothingFoundTextColor = Color(0xFF808080)
-private val ProgressColor = Color(0xFF24B4D3)
-private val SnackbarBackgroundColor = Color(0xFF808080)
-private val SnackbarActionColor = Color(0xFFFADD5B)
 
 @Composable
 fun CurrenciesScreen(viewModel: CurrenciesViewModel) {
@@ -186,13 +187,30 @@ fun CurrenciesScreenContent(
     onValueChanged: (Currency, BigDecimal) -> Unit = { _, _ -> },
 ) {
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
+    val pullToRefreshState = rememberPullToRefreshState()
 
     PullToRefreshBox(
         isRefreshing = state.isRefreshing,
         onRefresh = onRefresh,
         modifier = modifier.fillMaxSize(),
+        state = pullToRefreshState,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
+                isRefreshing = state.isRefreshing,
+                state = pullToRefreshState,
+                containerColor = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        },
     ) {
-        Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
             if (state.showList) {
                 LazyColumn(
                     state = listState,
@@ -210,7 +228,7 @@ fun CurrenciesScreenContent(
                                 onValueChanged = { value -> onValueChanged(currency, value) },
                             )
                             if (index < state.currencies.lastIndex) {
-                                HorizontalDivider(color = DividerColor)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
                         }
                     }
@@ -220,7 +238,7 @@ fun CurrenciesScreenContent(
             if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = ProgressColor,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
 
@@ -237,7 +255,7 @@ fun CurrenciesScreenContent(
                     Text(
                         text = stringResource(R.string.nothing_found),
                         fontSize = 16.sp,
-                        color = NothingFoundTextColor,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
                 }
@@ -245,18 +263,20 @@ fun CurrenciesScreenContent(
 
             SnackbarHost(
                 hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing),
             ) { data ->
                 Snackbar(
                     action = {
                         data.visuals.actionLabel?.let { label ->
                             TextButton(onClick = { data.performAction() }) {
-                                Text(text = label, color = SnackbarActionColor)
+                                Text(text = label, color = MaterialTheme.colorScheme.inversePrimary)
                             }
                         }
                     },
-                    containerColor = SnackbarBackgroundColor,
-                    contentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.inverseSurface,
+                    contentColor = MaterialTheme.colorScheme.inverseOnSurface,
                 ) {
                     Text(text = data.visuals.message)
                 }
