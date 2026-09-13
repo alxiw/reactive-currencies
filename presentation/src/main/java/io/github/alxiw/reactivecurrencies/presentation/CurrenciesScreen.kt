@@ -1,18 +1,17 @@
 package io.github.alxiw.reactivecurrencies.presentation
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -20,8 +19,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -32,6 +35,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -186,99 +191,133 @@ fun CurrenciesScreenContent(
     onItemClick: (Currency) -> Unit = {},
     onValueChanged: (Currency, BigDecimal) -> Unit = { _, _ -> },
 ) {
-    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
     val pullToRefreshState = rememberPullToRefreshState()
 
-    PullToRefreshBox(
-        isRefreshing = state.isRefreshing,
-        onRefresh = onRefresh,
+    var showConverter by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
+    Scaffold(
         modifier = modifier.fillMaxSize(),
-        state = pullToRefreshState,
-        indicator = {
-            PullToRefreshDefaults.Indicator(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
-                isRefreshing = state.isRefreshing,
-                state = pullToRefreshState,
-                containerColor = MaterialTheme.colorScheme.surface,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        },
-    ) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-        ) {
+        containerColor = MaterialTheme.colorScheme.background,
+        floatingActionButton = {
             if (state.showList) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = systemBarsPadding,
+                FloatingActionButton(
+                    onClick = { showConverter = true },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ) {
-                    itemsIndexed(
-                        items = state.currencies,
-                    ) { index, currency ->
-                        Column {
-                            CurrencyCard(
-                                currency = currency,
-                                enableInput = currency.isBase,
-                                onItemClick = { onItemClick(currency) },
-                                onValueChanged = { value -> onValueChanged(currency, value) },
-                            )
-                            if (index < state.currencies.lastIndex) {
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_swap),
+                        contentDescription = stringResource(id = R.string.open_converter)
+                    )
+                }
+            }
+        },
+    ) { innerPadding ->
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = onRefresh,
+            modifier = Modifier.fillMaxSize(),
+            state = pullToRefreshState,
+            indicator = {
+                PullToRefreshDefaults.Indicator(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .windowInsetsPadding(WindowInsets.statusBars),
+                    isRefreshing = state.isRefreshing,
+                    state = pullToRefreshState,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            },
+        ) {
+            Box(Modifier.fillMaxSize()) {
+                if (state.showList) {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = innerPadding,
+                    ) {
+                        itemsIndexed(
+                            items = state.currencies,
+                        ) { index, currency ->
+                            Column {
+                                CurrencyCard(
+                                    currency = currency,
+                                    enableInput = currency.isBase,
+                                    onItemClick = { onItemClick(currency) },
+                                    onValueChanged = { value -> onValueChanged(currency, value) },
+                                )
+                                if (index < state.currencies.lastIndex) {
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-
-            if (state.showStub) {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_nothing_found),
-                        contentDescription = null,
-                    )
-                    Spacer(Modifier.height(SpacingLarge))
-                    Text(
-                        text = stringResource(R.string.nothing_found),
-                        fontSize = TitleTextSize,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
+                if (state.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
-            }
 
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .windowInsetsPadding(WindowInsets.safeDrawing),
-            ) { data ->
-                Snackbar(
-                    action = {
-                        data.visuals.actionLabel?.let { label ->
-                            TextButton(onClick = { data.performAction() }) {
-                                Text(text = label, color = MaterialTheme.colorScheme.inversePrimary)
+                if (state.showStub) {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_nothing_found),
+                            contentDescription = null,
+                        )
+                        Spacer(Modifier.height(SpacingLarge))
+                        Text(
+                            text = stringResource(R.string.nothing_found),
+                            fontSize = TitleTextSize,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .windowInsetsPadding(WindowInsets.safeDrawing),
+                ) { data ->
+                    Snackbar(
+                        action = {
+                            data.visuals.actionLabel?.let { label ->
+                                TextButton(onClick = { data.performAction() }) {
+                                    Text(text = label, color = MaterialTheme.colorScheme.inversePrimary)
+                                }
                             }
-                        }
-                    },
-                    containerColor = MaterialTheme.colorScheme.inverseSurface,
-                    contentColor = MaterialTheme.colorScheme.inverseOnSurface,
-                ) {
-                    Text(text = data.visuals.message)
+                        },
+                        containerColor = MaterialTheme.colorScheme.inverseSurface,
+                        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                    ) {
+                        Text(text = data.visuals.message)
+                    }
+                }
+
+                if (showConverter) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showConverter = false },
+                        modifier = Modifier.statusBarsPadding(),
+                        sheetState = sheetState,
+                        contentWindowInsets = { WindowInsets(0, 0, 0, 0) }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                        )
+                    }
                 }
             }
         }
