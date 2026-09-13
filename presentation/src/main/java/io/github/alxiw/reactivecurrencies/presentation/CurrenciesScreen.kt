@@ -46,14 +46,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.presentation.currency.CurrencyCard
 import io.github.alxiw.reactivecurrencies.presentation.theme.CurrenciesTheme
+import io.github.alxiw.reactivecurrencies.presentation.theme.SpacingLarge
+import io.github.alxiw.reactivecurrencies.presentation.theme.TitleTextSize
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -251,10 +251,10 @@ fun CurrenciesScreenContent(
                         painter = painterResource(R.drawable.ic_nothing_found),
                         contentDescription = null,
                     )
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(SpacingLarge))
                     Text(
                         text = stringResource(R.string.nothing_found),
-                        fontSize = 16.sp,
+                        fontSize = TitleTextSize,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )

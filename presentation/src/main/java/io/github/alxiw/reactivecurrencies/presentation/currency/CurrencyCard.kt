@@ -26,10 +26,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.presentation.theme.CurrenciesTheme
+import io.github.alxiw.reactivecurrencies.presentation.theme.IconTextSize
+import io.github.alxiw.reactivecurrencies.presentation.theme.LabelTextSize
+import io.github.alxiw.reactivecurrencies.presentation.theme.SpacingLarge
+import io.github.alxiw.reactivecurrencies.presentation.theme.SpacingMedium
+import io.github.alxiw.reactivecurrencies.presentation.theme.SpacingSmall
+import io.github.alxiw.reactivecurrencies.presentation.theme.SpacingXSmall
+import io.github.alxiw.reactivecurrencies.presentation.theme.TitleTextSize
+import io.github.alxiw.reactivecurrencies.presentation.theme.ValueTextSize
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -74,36 +80,36 @@ fun CurrencyCard(
         modifier = modifier
             .fillMaxWidth()
             .then(if (enableInput) Modifier else Modifier.clickable(onClick = onItemClick))
-            .padding(vertical = 12.dp),
+            .padding(vertical = SpacingMedium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(SpacingLarge))
         Text(
             text = CurrencyUtil.getCurrencyIcon(currency.code),
-            fontSize = 36.sp,
+            fontSize = IconTextSize,
             color = MaterialTheme.colorScheme.primary,
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(SpacingSmall))
         Column(Modifier.weight(1f)) {
             Text(
                 text = CurrencyUtil.getCurrencyFullName(currency.code, currency.name),
-                fontSize = 16.sp,
+                fontSize = TitleTextSize,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = currency.code,
-                fontSize = 12.sp,
+                fontSize = LabelTextSize,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(SpacingSmall))
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.offset(y = 12.dp),
+            modifier = Modifier.offset(y = SpacingMedium),
         ) {
             if (enableInput) {
                 BasicTextField(
@@ -113,7 +119,7 @@ fun CurrencyCard(
                     },
                     singleLine = true,
                     textStyle = TextStyle(
-                        fontSize = 14.sp,
+                        fontSize = ValueTextSize,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.End,
                     ),
@@ -123,20 +129,20 @@ fun CurrencyCard(
             } else {
                 Text(
                     text = text,
-                    fontSize = 14.sp,
+                    fontSize = ValueTextSize,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     textAlign = TextAlign.End,
                 )
             }
             Text(
-                modifier = Modifier.padding(start = 4.dp),
+                modifier = Modifier.padding(start = SpacingXSmall),
                 text = CurrencyUtil.getCurrencySignBy(currency.code),
-                fontSize = 14.sp,
+                fontSize = ValueTextSize,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(SpacingLarge))
     }
 }
 
