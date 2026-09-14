@@ -297,9 +297,9 @@ fun ConverterContentPreview() {
     MaterialTheme {
         val currenciesState = CurrenciesState.Ready(
             list = listOf(
-                Triple("USD", "", "US Dollar"),
-                Triple("EUR", "", "Euro"),
-                Triple("GBP", "", "British Pound")
+                Triple("USD", "\uD83C\uDDFA\uD83C\uDDF8", "US Dollar"),
+                Triple("EUR", "\uD83C\uDDEA\uD83C\uDDFA", "Euro"),
+                Triple("GBP", "\uD83C\uDDEC\uD83C\uDDE7", "British Pound")
             )
         )
         val conversionState = ConversionState.Result("0.92")
