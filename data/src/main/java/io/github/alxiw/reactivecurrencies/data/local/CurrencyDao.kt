@@ -17,6 +17,9 @@ interface CurrencyDao {
     @Query("SELECT * FROM currency")
     fun load(): Single<List<CurrencyDto>>
 
+    @Query("SELECT * FROM currency WHERE code IN (:codes)")
+    fun loadByCodes(codes: List<String>): Single<List<CurrencyDto>>
+
     @Query("DELETE FROM currency")
     fun delete(): Completable
 }

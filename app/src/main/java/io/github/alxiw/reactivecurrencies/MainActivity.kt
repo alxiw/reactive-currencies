@@ -5,10 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.alxiw.reactivecurrencies.presentation.CurrenciesScreen
-import io.github.alxiw.reactivecurrencies.presentation.CurrenciesViewModel
 import io.github.alxiw.reactivecurrencies.presentation.di.AppContainer
+import io.github.alxiw.reactivecurrencies.presentation.navigation.AppNavHost
+import io.github.alxiw.reactivecurrencies.presentation.navigation.rememberNavigator
 import io.github.alxiw.reactivecurrencies.presentation.theme.CurrenciesTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,10 +18,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CurrenciesTheme {
-                val viewModel: CurrenciesViewModel = viewModel(
-                    factory = (application as AppContainer).viewModelFactory,
+                AppNavHost(
+                    navigator = rememberNavigator(),
+                    viewModelFactory = (application as AppContainer).viewModelFactory,
                 )
-                CurrenciesScreen(viewModel = viewModel)
             }
         }
     }

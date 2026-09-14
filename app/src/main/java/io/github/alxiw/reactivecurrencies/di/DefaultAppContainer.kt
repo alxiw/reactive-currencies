@@ -5,6 +5,8 @@ import io.github.alxiw.reactivecurrencies.data.di.DataContainer
 import io.github.alxiw.reactivecurrencies.data.di.DefaultDataContainer
 import io.github.alxiw.reactivecurrencies.domain.usecase.ChangeBaseCurrencyUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.ChangeValueUseCase
+import io.github.alxiw.reactivecurrencies.domain.usecase.ConvertValueUseCase
+import io.github.alxiw.reactivecurrencies.domain.usecase.GetCodesUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCurrenciesUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.UpdateCurrenciesUseCase
 import io.github.alxiw.reactivecurrencies.presentation.CurrenciesViewModelFactory
@@ -19,7 +21,10 @@ class DefaultAppContainer(context: Context) : AppContainer {
             GetCurrenciesUseCase(dataContainer.currenciesRepository),
             UpdateCurrenciesUseCase(dataContainer.currenciesRepository),
             ChangeBaseCurrencyUseCase(dataContainer.currenciesRepository),
-            ChangeValueUseCase(dataContainer.currenciesRepository)
+            ChangeValueUseCase(dataContainer.currenciesRepository),
+            GetCodesUseCase(dataContainer.currenciesRepository),
+            ConvertValueUseCase(dataContainer.currenciesRepository),
+            dataContainer.currencyPreferences
         )
     }
 }

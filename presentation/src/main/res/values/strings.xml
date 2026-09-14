@@ -5,4 +5,7 @@
     <string name="error_updating">Updating error</string>
     <string name="nothing_found">Nothing found</string>
     <string name="open_converter">Open converter</string>
+    <string name="converter_hint">Type value</string>
+    <string name="converter_result">Result</string>
+    <string name="converter_repeat">Repeat</string>
 </resources>

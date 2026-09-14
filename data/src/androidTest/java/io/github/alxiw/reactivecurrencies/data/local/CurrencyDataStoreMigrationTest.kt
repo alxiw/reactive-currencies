@@ -70,13 +70,13 @@ class CurrencyDataStoreMigrationTest {
         ) { dataStoreFile }
 
         // when: the first read triggers the migration
-        val subject = CurrencyDataStore(dataStore)
-        val (code, value) = subject.loadBaseCurrency()
+        val subject = CurrencyPreferences(dataStore)
+        val (code, value) = subject.loadBaseCurrency().blockingGet()
 
         // then: legacy values are available through the DataStore-backed API
         assertEquals("USD", code)
         assertEquals("42", value)
-        assertEquals("2024-01-01", subject.loadUpdateDate())
+        assertEquals("2024-01-01", subject.loadUpdateDate().blockingGet())
 
         // and the legacy SharedPreferences were consumed, so the migration won't run again
         assertTrue(legacySharedPreferences().all.isEmpty())
@@ -92,7 +92,7 @@ class CurrencyDataStoreMigrationTest {
         ) { dataStoreFile }
 
         // when
-        val (code, value) = CurrencyDataStore(dataStore).loadBaseCurrency()
+        val (code, value) = CurrencyPreferences(dataStore).loadBaseCurrency().blockingGet()
 
         // then: built-in defaults are used
         assertEquals("RUB", code)

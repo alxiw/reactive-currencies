@@ -5,13 +5,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -23,7 +20,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -35,7 +31,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -43,7 +38,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,7 +59,11 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 @Composable
-fun CurrenciesScreen(viewModel: CurrenciesViewModel) {
+fun CurrenciesScreen(
+    viewModel: CurrenciesViewModel,
+    onOpenConverter: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
 
     var state by remember { mutableStateOf(CurrenciesUiState()) }
 
@@ -177,6 +175,8 @@ fun CurrenciesScreen(viewModel: CurrenciesViewModel) {
         onValueChanged = { currency, value ->
             viewModel.submit(CurrenciesIntent.ChangeValue(Currency(currency.code, value, isBase = true)))
         },
+        onOpenConverter = onOpenConverter,
+        modifier = modifier,
     )
 }
 
@@ -190,13 +190,9 @@ fun CurrenciesScreenContent(
     onRefresh: () -> Unit = {},
     onItemClick: (Currency) -> Unit = {},
     onValueChanged: (Currency, BigDecimal) -> Unit = { _, _ -> },
+    onOpenConverter: () -> Unit = {},
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
-
-    var showConverter by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -204,7 +200,7 @@ fun CurrenciesScreenContent(
         floatingActionButton = {
             if (state.showList) {
                 FloatingActionButton(
-                    onClick = { showConverter = true },
+                    onClick = onOpenConverter,
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ) {
@@ -302,21 +298,6 @@ fun CurrenciesScreenContent(
                         contentColor = MaterialTheme.colorScheme.inverseOnSurface,
                     ) {
                         Text(text = data.visuals.message)
-                    }
-                }
-
-                if (showConverter) {
-                    ModalBottomSheet(
-                        onDismissRequest = { showConverter = false },
-                        modifier = Modifier.statusBarsPadding(),
-                        sheetState = sheetState,
-                        contentWindowInsets = { WindowInsets(0, 0, 0, 0) }
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                        )
                     }
                 }
             }

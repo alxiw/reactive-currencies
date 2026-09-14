@@ -1,6 +1,6 @@
 package io.github.alxiw.reactivecurrencies.data
 
-import io.github.alxiw.reactivecurrencies.data.local.CurrencyDataStore
+import io.github.alxiw.reactivecurrencies.domain.repository.CurrencyPreferences
 import io.github.alxiw.reactivecurrencies.data.local.LocalDataSource
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.github.alxiw.reactivecurrencies.domain.repository.CurrenciesRepository as DomainRepository
@@ -8,11 +8,12 @@ import io.github.alxiw.reactivecurrencies.data.remote.RemoteDataSource
 import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.rxSingle
+import java.math.BigDecimal
 
 class CurrenciesRepository(
     private val localDataSource: LocalDataSource,
     private val remoteDataSource: RemoteDataSource,
-    private val dataStore: CurrencyDataStore,
+    private val prefs: CurrencyPreferences,
 ) : DomainRepository {
 
     override fun updateAllCurrencies(): Single<String> {
@@ -20,14 +21,14 @@ class CurrenciesRepository(
             .flatMap { data ->
                 rxSingle {
                     localDataSource.saveCurrencyList(data.list).await()
-                    dataStore.saveUpdateDate(data.date)
+                    prefs.saveUpdateDate(data.date).await()
                     data.date
                 }
             }
     }
 
     override fun getAllCurrencies(): Single<List<Currency>> {
-        return rxSingle { dataStore.loadBaseCurrency() }
+        return prefs.loadBaseCurrency()
             .flatMap { (code, value) -> localDataSource.calculateCurrencyList(code, value) }
     }
 
@@ -44,8 +45,16 @@ class CurrenciesRepository(
         return updateBaseCurrency(code, value)
     }
 
+    override fun getCodes(): Single<List<Pair<String, String>>> {
+        return localDataSource.getCodes()
+    }
+
+    override fun convertValue(from: String, to: String, value: BigDecimal): Single<BigDecimal> {
+        return localDataSource.convertValue(from, to, value)
+    }
+
     private fun updateBaseCurrency(code: String, value: String): Single<List<Currency>> {
-        return rxSingle { dataStore.saveBaseCurrency(code, value) }
-            .flatMap { localDataSource.calculateCurrencyList(code, value) }
+        return prefs.saveBaseCurrency(code, value)
+            .andThen(localDataSource.calculateCurrencyList(code, value))
     }
 }

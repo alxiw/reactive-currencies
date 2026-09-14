@@ -59,6 +59,7 @@ class CurrenciesDataConverterTest {
 
         val rub = result.list.first { it.code == "RUB" }
         assertEquals(100, rub.nominal)
+        assertEquals("1.0", rub.value)
     }
 
     @Test
