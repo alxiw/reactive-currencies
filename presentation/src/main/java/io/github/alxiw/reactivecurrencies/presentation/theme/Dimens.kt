@@ -14,3 +14,16 @@ val SpacingXSmall = 4.dp
 val SpacingSmall = 8.dp
 val SpacingMedium = 12.dp
 val SpacingLarge = 16.dp
+
+// Converter text sizes
+val ConverterFieldTextSize = 24.sp
+
+// Converter spacing
+val ConverterContentPadding = 24.dp
+val ConverterFieldSpacing = 36.dp
+val ConverterSwapButtonSize = 48.dp
+val ConverterSwapLoaderSize = 32.dp
+val ConverterSwapProgressStroke = 2.dp
+
+// Converter animation
+const val ConverterSwapAnimationDuration = 400

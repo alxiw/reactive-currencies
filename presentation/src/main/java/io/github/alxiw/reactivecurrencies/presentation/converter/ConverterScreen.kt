@@ -35,8 +35,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,102 +51,113 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.alxiw.reactivecurrencies.presentation.R
+import io.github.alxiw.reactivecurrencies.presentation.theme.ConverterContentPadding
+import io.github.alxiw.reactivecurrencies.presentation.theme.ConverterFieldSpacing
+import io.github.alxiw.reactivecurrencies.presentation.theme.ConverterFieldTextSize
+import io.github.alxiw.reactivecurrencies.presentation.theme.ConverterSwapAnimationDuration
+import io.github.alxiw.reactivecurrencies.presentation.theme.ConverterSwapButtonSize
+import io.github.alxiw.reactivecurrencies.presentation.theme.ConverterSwapLoaderSize
+import io.github.alxiw.reactivecurrencies.presentation.theme.ConverterSwapProgressStroke
+import io.github.alxiw.reactivecurrencies.presentation.theme.CurrenciesTheme
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
 
 @Composable
-fun ConverterScreen(viewModel: ConverterViewModel) {
+fun ConverterScreen(
+    viewModel: ConverterViewModel,
+    modifier: Modifier = Modifier,
+) {
 
-    val uiState by viewModel.state.collectAsStateWithLifecycleRx(initial = ConverterUiState())
-    val snackBarHostState = remember { SnackbarHostState() }
+    var state by remember { mutableStateOf(ConverterUiState()) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
     val repeatLabel = stringResource(R.string.converter_repeat)
     val scope = rememberCoroutineScope()
 
     DisposableEffect(Unit) {
-        viewModel.initData()
-        onDispose { }
+        val subscription = viewModel.state
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { state = it }
+        onDispose { subscription.dispose() }
     }
 
-    DisposableEffect(viewModel.events) {
-        val disposable = viewModel.events.subscribe { message ->
-            scope.launch {
-                val result = snackBarHostState.showSnackbar(
-                    message = message,
-                    actionLabel = repeatLabel,
-                    duration = SnackbarDuration.Indefinite
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    viewModel.initData()
-                }
-            }
-        }
-        onDispose { disposable.dispose() }
-    }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        containerColor = Color.Transparent,
-        modifier = Modifier.fillMaxSize()
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (uiState.currenciesState) {
-                is CurrenciesState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(modifier = Modifier.size(64.dp))
+    DisposableEffect(Unit) {
+        val subscription = viewModel.events
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { event ->
+                when (event) {
+                    is ConverterEvent.ShowError -> scope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = event.message,
+                            actionLabel = repeatLabel,
+                            duration = SnackbarDuration.Indefinite,
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.submit(ConverterIntent.Retry)
+                        }
                     }
                 }
-                is CurrenciesState.Ready -> {
-                    ConverterContent(
-                        uiState = uiState,
-                        currenciesState = uiState.currenciesState as CurrenciesState.Ready,
-                        onValueChange = viewModel::updateValue,
-                        onFromCurrencyChange = viewModel::updateFromCurrency,
-                        onToCurrencyChange = viewModel::updateToCurrency,
-                        onSwap = viewModel::swapCurrencies
-                    )
-                }
             }
-        }
+        onDispose { subscription.dispose() }
     }
+
+    // Initial load. The ViewModel guards against duplicate loads on config change.
+    LaunchedEffect(Unit) {
+        viewModel.submit(ConverterIntent.LoadInitial)
+    }
+
+    ConverterScreenContent(
+        state = state,
+        snackbarHostState = snackbarHostState,
+        onValueChange = { viewModel.submit(ConverterIntent.ChangeValue(it)) },
+        onFromCurrencyChange = { viewModel.submit(ConverterIntent.SelectFrom(it)) },
+        onToCurrencyChange = { viewModel.submit(ConverterIntent.SelectTo(it)) },
+        onSwap = { viewModel.submit(ConverterIntent.Swap) },
+        modifier = modifier,
+    )
 }
 
 @Composable
-private fun <T : Any> Observable<T>.collectAsStateWithLifecycleRx(initial: T): State<T> {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val state = remember { mutableStateOf(initial) }
-    DisposableEffect(lifecycleOwner, this) {
-        val disposables = CompositeDisposable()
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_START -> disposables.add(
-                    observeOn(AndroidSchedulers.mainThread()).subscribe { state.value = it }
+fun ConverterScreenContent(
+    state: ConverterUiState,
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    onValueChange: (TextFieldValue) -> Unit = {},
+    onFromCurrencyChange: (String) -> Unit = {},
+    onToCurrencyChange: (String) -> Unit = {},
+    onSwap: () -> Unit = {},
+) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = Color.Transparent,
+        modifier = modifier.fillMaxSize(),
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = MaterialTheme.colorScheme.primary,
                 )
-                Lifecycle.Event.ON_STOP -> disposables.clear()
-                else -> Unit
+            }
+
+            if (state.showContent) {
+                ConverterContent(
+                    state = state,
+                    onValueChange = onValueChange,
+                    onFromCurrencyChange = onFromCurrencyChange,
+                    onToCurrencyChange = onToCurrencyChange,
+                    onSwap = onSwap,
+                )
             }
         }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            disposables.dispose()
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
     }
-    return state
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConverterContent(
-    uiState: ConverterUiState,
-    currenciesState: CurrenciesState.Ready,
+    state: ConverterUiState,
     onValueChange: (TextFieldValue) -> Unit,
     onFromCurrencyChange: (String) -> Unit,
     onToCurrencyChange: (String) -> Unit,
@@ -155,19 +166,19 @@ fun ConverterContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(ConverterContentPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         OutlinedTextField(
-            value = uiState.inputValue,
+            value = state.inputValue,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { FieldPlaceholder(stringResource(R.string.converter_hint)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            textStyle = LocalTextStyle.current.copy(fontSize = 24.sp, textAlign = TextAlign.Center)
+            textStyle = LocalTextStyle.current.copy(fontSize = ConverterFieldTextSize, textAlign = TextAlign.Center)
         )
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(ConverterFieldSpacing))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -176,25 +187,25 @@ fun ConverterContent(
         ) {
             CurrencySpinner(
                 modifier = Modifier.weight(1f),
-                selectedCurrency = uiState.selectedFrom,
-                currencies = currenciesState.list,
+                selectedCurrency = state.selectedFrom,
+                currencies = state.currencies,
                 onCurrencySelected = onFromCurrencyChange
             )
 
             val rotation by animateFloatAsState(
-                targetValue = if (uiState.isSwapped) -360f else 0f,
-                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
+                targetValue = if (state.isSwapped) -360f else 0f,
+                animationSpec = tween(durationMillis = ConverterSwapAnimationDuration, easing = FastOutSlowInEasing),
                 label = "swap_rotation"
             )
 
-            val isLoading = uiState.conversionState is ConversionState.Loading
+            val isLoading = state.conversion is ConversionState.Loading
 
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(ConverterSwapButtonSize)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(bounded = false, radius = 24.dp)
+                        indication = ripple(bounded = false, radius = ConverterSwapButtonSize / 2)
                     ) {
                         onSwap()
                     },
@@ -202,15 +213,15 @@ fun ConverterContent(
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(32.dp),
-                        strokeWidth = 2.dp
+                        modifier = Modifier.size(ConverterSwapLoaderSize),
+                        strokeWidth = ConverterSwapProgressStroke
                     )
                 } else {
                     Icon(
                         painter = painterResource(R.drawable.ic_arrow_right),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(ConverterSwapLoaderSize)
                             .graphicsLayer { rotationZ = rotation }
                     )
                 }
@@ -218,16 +229,16 @@ fun ConverterContent(
 
             CurrencySpinner(
                 modifier = Modifier.weight(1f),
-                selectedCurrency = uiState.selectedTo,
-                currencies = currenciesState.list,
+                selectedCurrency = state.selectedTo,
+                currencies = state.currencies,
                 onCurrencySelected = onToCurrencyChange
             )
         }
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(ConverterFieldSpacing))
 
-        val resultValue = when (val state = uiState.conversionState) {
-            is ConversionState.Result -> state.value
+        val resultValue = when (val conversion = state.conversion) {
+            is ConversionState.Result -> conversion.value
             else -> ""
         }
 
@@ -237,7 +248,7 @@ fun ConverterContent(
             readOnly = true,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { FieldPlaceholder(stringResource(R.string.converter_result)) },
-            textStyle = LocalTextStyle.current.copy(fontSize = 24.sp, textAlign = TextAlign.Center),
+            textStyle = LocalTextStyle.current.copy(fontSize = ConverterFieldTextSize, textAlign = TextAlign.Center),
         )
     }
 }
@@ -287,7 +298,7 @@ fun CurrencySpinner(
 private fun FieldPlaceholder(text: String) {
     Text(
         text = text,
-        fontSize = 24.sp,
+        fontSize = ConverterFieldTextSize,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -295,24 +306,36 @@ private fun FieldPlaceholder(text: String) {
 @Preview(showBackground = true)
 @Composable
 fun ConverterContentPreview() {
-    MaterialTheme {
-        val currenciesState = CurrenciesState.Ready(
-            list = listOf(
-                Triple("USD", "\uD83C\uDDFA\uD83C\uDDF8", "US Dollar"),
-                Triple("EUR", "\uD83C\uDDEA\uD83C\uDDFA", "Euro"),
-                Triple("GBP", "\uD83C\uDDEC\uD83C\uDDE7", "British Pound")
-            )
-        )
-        val conversionState = ConversionState.Result("0.92")
+    CurrenciesTheme {
         ConverterContent(
-            uiState = ConverterUiState(
-                currenciesState = currenciesState,
-                conversionState = conversionState,
+            state = ConverterUiState(
+                isLoading = false,
+                currencies = listOf(
+                    Triple("USD", "\uD83C\uDDFA\uD83C\uDDF8", "US Dollar"),
+                    Triple("EUR", "\uD83C\uDDEA\uD83C\uDDFA", "Euro"),
+                    Triple("GBP", "\uD83C\uDDEC\uD83C\uDDE7", "British Pound")
+                ),
                 selectedFrom = "USD",
                 selectedTo = "EUR",
-                inputValue = TextFieldValue("100")
+                inputValue = TextFieldValue("100"),
+                conversion = ConversionState.Result("0.92")
             ),
-            currenciesState = currenciesState,
+            onValueChange = {},
+            onFromCurrencyChange = {},
+            onToCurrencyChange = {},
+            onSwap = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ConverterScreenLoadingPreview() {
+    CurrenciesTheme {
+        ConverterScreenContent(
+            state = ConverterUiState(
+                isLoading = true
+            ),
             onValueChange = {},
             onFromCurrencyChange = {},
             onToCurrencyChange = {},

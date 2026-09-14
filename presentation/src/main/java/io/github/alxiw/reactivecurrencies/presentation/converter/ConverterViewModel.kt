@@ -6,34 +6,42 @@ import io.github.alxiw.reactivecurrencies.domain.repository.CurrencyPreferences
 import io.github.alxiw.reactivecurrencies.domain.usecase.ConvertValueUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCodesUseCase
 import io.github.alxiw.reactivecurrencies.presentation.util.CurrencyUtil
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import io.reactivex.rxjava3.subjects.PublishSubject
-import java.math.BigDecimal
+
+sealed interface ConverterIntent {
+    data object LoadInitial : ConverterIntent
+    data object Retry : ConverterIntent
+    data class SelectFrom(val code: String) : ConverterIntent
+    data class SelectTo(val code: String) : ConverterIntent
+    data class ChangeValue(val value: TextFieldValue) : ConverterIntent
+    data object Swap : ConverterIntent
+}
 
 data class ConverterUiState(
-    val currenciesState: CurrenciesState = CurrenciesState.Loading,
-    val conversionState: ConversionState = ConversionState.Idle,
+    val isLoading: Boolean = true,
+    val currencies: List<Triple<String, String, String>> = emptyList(),
     val selectedFrom: String = "",
     val selectedTo: String = "",
     val inputValue: TextFieldValue = TextFieldValue(""),
-    val isSwapped: Boolean = false
-)
-
-sealed interface CurrenciesState {
-    data object Loading : CurrenciesState
-    data class Ready(val list: List<Triple<String, String, String>>) : CurrenciesState
+    val isSwapped: Boolean = false,
+    val conversion: ConversionState = ConversionState.Idle,
+) {
+    val showContent: Boolean get() = currencies.isNotEmpty()
 }
 
 sealed interface ConversionState {
     data object Idle : ConversionState
     data object Loading : ConversionState
     data class Result(val value: String) : ConversionState
+}
+
+sealed interface ConverterEvent {
+    data class ShowError(val message: String) : ConverterEvent
 }
 
 class ConverterViewModel(
@@ -44,30 +52,65 @@ class ConverterViewModel(
 
     private val compositeDisposable = CompositeDisposable()
 
-    private var loadDisposable: Disposable? = null
-    private var convertDisposable: Disposable? = null
-
+    private val intents = PublishSubject.create<ConverterIntent>()
     private val stateSubject = BehaviorSubject.createDefault(ConverterUiState())
-    private val eventSubject = PublishSubject.create<String>()
+    private val eventSubject = PublishSubject.create<ConverterEvent>()
 
-    private var codeFrom = ""
-    private var codeTo = ""
-    private var value: BigDecimal? = null
-
-    private var isInitialized = false
+    private var initialLoadSubmitted = false
 
     val state: Observable<ConverterUiState> = stateSubject.hide()
-    val events: Observable<String> = eventSubject.hide()
+    val events: Observable<ConverterEvent> = eventSubject.hide()
 
-    fun initData() {
-        if (isInitialized) return
-        isInitialized = true
+    private val results: Observable<Result> = intents
+        .switchMap(::handleIntent)
+        .share()
 
-        loadDisposable?.dispose()
-        update { it.copy(currenciesState = CurrenciesState.Loading) }
+    init {
+        compositeDisposable.add(
+            results
+                .scan(ConverterUiState(), ::reduce)
+                .distinctUntilChanged()
+                .subscribe(stateSubject::onNext)
+        )
+        compositeDisposable.add(
+            results
+                .subscribe { result ->
+                    toEvent(result)?.let(eventSubject::onNext)
+                }
+        )
+    }
 
-        loadDisposable = getCodes()
-            .subscribeOn(Schedulers.io())
+    fun submit(intent: ConverterIntent) {
+        intents.onNext(intent)
+    }
+
+    override fun onCleared() {
+        compositeDisposable.dispose()
+    }
+
+    private fun handleIntent(intent: ConverterIntent): Observable<Result> = when (intent) {
+        is ConverterIntent.LoadInitial -> {
+            if (initialLoadSubmitted) {
+                // already loaded or loading — no need to reload on configuration change
+                Observable.empty()
+            } else {
+                initialLoadSubmitted = true
+                loadInitial().startWithItem(Result.Loading)
+            }
+        }
+        is ConverterIntent.Retry -> {
+            initialLoadSubmitted = true
+            loadInitial().startWithItem(Result.Loading)
+        }
+        is ConverterIntent.SelectFrom -> selectFrom(intent.code)
+        is ConverterIntent.SelectTo -> selectTo(intent.code)
+        is ConverterIntent.ChangeValue -> changeValue(intent.value)
+        is ConverterIntent.Swap -> swap()
+    }
+
+    private fun loadInitial(): Observable<Result> =
+        getCodes()
+            .toObservable()
             .flatMap { currencies ->
                 val codes = currencies.mapTo(mutableSetOf()) { it.first }
                 val firstCode = currencies.firstOrNull()?.first ?: ""
@@ -78,106 +121,127 @@ class ConverterViewModel(
                 ) { savedFrom, savedTo ->
                     val from = savedFrom.takeIf { it in codes } ?: firstCode
                     val to = savedTo.takeIf { it in codes } ?: firstCode
-                    Triple(currencies.map { Triple(it.first, CurrencyUtil.getCurrencyIcon(it.first), it.second) }, from, to)
-                }
+
+                    Result.DataLoaded(
+                        currencies = currencies.map {
+                            Triple(it.first, CurrencyUtil.getCurrencyIcon(it.first), it.second)
+                        },
+                        from = from,
+                        to = to,
+                    ) as Result
+                }.toObservable()
             }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { (currencies, from, to) ->
-                    codeFrom = from
-                    codeTo = to
-                    update {
-                        it.copy(
-                            currenciesState = CurrenciesState.Ready(currencies),
-                            selectedFrom = from,
-                            selectedTo = to
-                        )
-                    }
-                    convert()
-                }
-            ) { throwable ->
-                isInitialized = false
-                eventSubject.onNext(throwable.message ?: throwable.toString())
+            .flatMap { result ->
+                val data = result as Result.DataLoaded
+                convert(data.from, data.to, TextFieldValue("")).startWithItem(result)
             }
-    }
-
-    fun updateFromCurrency(value: String?) {
-        codeFrom = value ?: ""
-        update { it.copy(selectedFrom = codeFrom) }
-        compositeDisposable.add(
-            prefs.saveFrom(codeFrom)
-                .subscribeOn(Schedulers.io())
-                .subscribe({}, {})
-        )
-        convert()
-    }
-
-    fun updateToCurrency(value: String?) {
-        codeTo = value ?: ""
-        update { it.copy(selectedTo = codeTo) }
-        compositeDisposable.add(
-            prefs.saveTo(codeTo)
-                .subscribeOn(Schedulers.io())
-                .subscribe({}, {})
-        )
-        convert()
-    }
-
-    fun updateValue(value: TextFieldValue) {
-        this.value = value.text.toBigDecimalOrNull()
-        update { it.copy(inputValue = value) }
-        convert()
-    }
-
-    fun swapCurrencies() {
-        val temp = codeFrom
-        codeFrom = codeTo
-        codeTo = temp
-        update {
-            it.copy(
-                selectedFrom = codeFrom,
-                selectedTo = codeTo,
-                isSwapped = !it.isSwapped
-            )
-        }
-        compositeDisposable.add(
-            prefs.saveFrom(codeFrom)
-                .subscribeOn(Schedulers.io())
-                .subscribe({}, {})
-        )
-        compositeDisposable.add(
-            prefs.saveTo(codeTo)
-                .subscribeOn(Schedulers.io())
-                .subscribe({}, {})
-        )
-        convert()
-    }
-
-    private fun convert() {
-        if (codeFrom.isEmpty() || codeTo.isEmpty()) return
-
-        convertDisposable?.dispose()
-        update { it.copy(conversionState = ConversionState.Loading) }
-
-        convertDisposable = convertValue(codeFrom, codeTo, value)
+            .onErrorReturn { Result.LoadFailed(it.message ?: it.toString()) }
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { result -> update { it.copy(conversionState = ConversionState.Result(result)) } },
-                { throwable ->
-                    isInitialized = false
-                    eventSubject.onNext(throwable.message ?: throwable.toString())
-                }
-            )
+
+    private fun selectFrom(code: String): Observable<Result> {
+        val current = stateSubject.value ?: ConverterUiState()
+        saveFrom(code)
+        return Observable
+            .just<Result>(Result.FromChanged(code))
+            .concatWith(convert(code, current.selectedTo, current.inputValue))
     }
 
-    private fun update(block: (ConverterUiState) -> ConverterUiState) {
-        stateSubject.onNext(block(stateSubject.value ?: ConverterUiState()))
+    private fun selectTo(code: String): Observable<Result> {
+        val current = stateSubject.value ?: ConverterUiState()
+        saveTo(code)
+        return Observable
+            .just<Result>(Result.ToChanged(code))
+            .concatWith(convert(current.selectedFrom, code, current.inputValue))
     }
 
-    override fun onCleared() {
-        compositeDisposable.dispose()
-        loadDisposable?.dispose()
-        convertDisposable?.dispose()
+    private fun changeValue(value: TextFieldValue): Observable<Result> {
+        val current = stateSubject.value ?: ConverterUiState()
+        return Observable
+            .just<Result>(Result.ValueChanged(value))
+            .concatWith(convert(current.selectedFrom, current.selectedTo, value))
+    }
+
+    private fun swap(): Observable<Result> {
+        val current = stateSubject.value ?: ConverterUiState()
+        val from = current.selectedTo
+        val to = current.selectedFrom
+        saveFrom(from)
+        saveTo(to)
+        return Observable
+            .just<Result>(Result.Swapped(from, to))
+            .concatWith(convert(from, to, current.inputValue))
+    }
+
+    private fun convert(from: String, to: String, input: TextFieldValue): Observable<Result> {
+        if (from.isBlank() || to.isBlank()) {
+            return Observable.empty()
+        }
+        return convertValue(from, to, input.text.toBigDecimalOrNull())
+            .toObservable()
+            .map<Result> { Result.ConversionResult(it) }
+            .onErrorReturn { Result.ConversionFailed(it.message ?: it.toString()) }
+            .subscribeOn(Schedulers.io())
+            .startWithItem(Result.ConversionLoading)
+    }
+
+    private fun saveFrom(code: String) {
+        compositeDisposable.add(
+            prefs.saveFrom(code)
+                .subscribeOn(Schedulers.io())
+                .subscribe({}, {})
+        )
+    }
+
+    private fun saveTo(code: String) {
+        compositeDisposable.add(
+            prefs.saveTo(code)
+                .subscribeOn(Schedulers.io())
+                .subscribe({}, {})
+        )
+    }
+
+    private fun reduce(state: ConverterUiState, result: Result): ConverterUiState = when (result) {
+        is Result.Loading -> state.copy(isLoading = true, currencies = emptyList())
+        is Result.DataLoaded -> state.copy(
+            isLoading = false,
+            currencies = result.currencies,
+            selectedFrom = result.from,
+            selectedTo = result.to,
+        )
+        is Result.LoadFailed -> state.copy(isLoading = false)
+        is Result.FromChanged -> state.copy(selectedFrom = result.code)
+        is Result.ToChanged -> state.copy(selectedTo = result.code)
+        is Result.ValueChanged -> state.copy(inputValue = result.value)
+        is Result.Swapped -> state.copy(
+            selectedFrom = result.from,
+            selectedTo = result.to,
+            isSwapped = !state.isSwapped,
+        )
+        is Result.ConversionLoading -> state.copy(conversion = ConversionState.Loading)
+        is Result.ConversionResult -> state.copy(conversion = ConversionState.Result(result.value))
+        is Result.ConversionFailed -> state.copy(conversion = ConversionState.Idle)
+    }
+
+    private fun toEvent(result: Result): ConverterEvent? = when (result) {
+        is Result.LoadFailed -> ConverterEvent.ShowError(result.message)
+        is Result.ConversionFailed -> ConverterEvent.ShowError(result.message)
+        else -> null
+    }
+
+    private sealed interface Result {
+        data object Loading : Result
+        data class DataLoaded(
+            val currencies: List<Triple<String, String, String>>,
+            val from: String,
+            val to: String,
+        ) : Result
+        data class LoadFailed(val message: String) : Result
+        data class FromChanged(val code: String) : Result
+        data class ToChanged(val code: String) : Result
+        data class ValueChanged(val value: TextFieldValue) : Result
+        data class Swapped(val from: String, val to: String) : Result
+        data object ConversionLoading : Result
+        data class ConversionResult(val value: String) : Result
+        data class ConversionFailed(val message: String) : Result
     }
 }
