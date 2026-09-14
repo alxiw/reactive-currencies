@@ -9,15 +9,15 @@ import io.github.alxiw.reactivecurrencies.domain.usecase.ConvertValueUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCodesUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCurrenciesUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.UpdateCurrenciesUseCase
-import io.github.alxiw.reactivecurrencies.presentation.CurrenciesViewModelFactory
+import io.github.alxiw.reactivecurrencies.presentation.di.AppViewModelFactory
 import io.github.alxiw.reactivecurrencies.presentation.di.AppContainer
 
 class DefaultAppContainer(context: Context) : AppContainer {
 
     private val dataContainer: DataContainer = DefaultDataContainer(context)
 
-    override val viewModelFactory: CurrenciesViewModelFactory by lazy {
-        CurrenciesViewModelFactory(
+    override val viewModelFactory: AppViewModelFactory by lazy {
+        AppViewModelFactory(
             GetCurrenciesUseCase(dataContainer.currenciesRepository),
             UpdateCurrenciesUseCase(dataContainer.currenciesRepository),
             ChangeBaseCurrencyUseCase(dataContainer.currenciesRepository),

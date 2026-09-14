@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.presentation
+package io.github.alxiw.reactivecurrencies.presentation.currencies
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

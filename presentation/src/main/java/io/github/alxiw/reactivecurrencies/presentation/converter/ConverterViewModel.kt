@@ -1,11 +1,11 @@
-package io.github.alxiw.reactivecurrencies.presentation
+package io.github.alxiw.reactivecurrencies.presentation.converter
 
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import io.github.alxiw.reactivecurrencies.domain.repository.CurrencyPreferences
 import io.github.alxiw.reactivecurrencies.domain.usecase.ConvertValueUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCodesUseCase
-import io.github.alxiw.reactivecurrencies.presentation.currency.CurrencyUtil
+import io.github.alxiw.reactivecurrencies.presentation.util.CurrencyUtil
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single

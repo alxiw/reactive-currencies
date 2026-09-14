@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.presentation.currency
+package io.github.alxiw.reactivecurrencies.presentation.util
 
 import java.util.Currency
 import java.util.Locale

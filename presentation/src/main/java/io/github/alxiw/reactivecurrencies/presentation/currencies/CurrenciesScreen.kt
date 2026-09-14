@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.presentation
+package io.github.alxiw.reactivecurrencies.presentation.currencies
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -49,7 +49,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
-import io.github.alxiw.reactivecurrencies.presentation.currency.CurrencyCard
+import io.github.alxiw.reactivecurrencies.presentation.R
 import io.github.alxiw.reactivecurrencies.presentation.theme.CurrenciesTheme
 import io.github.alxiw.reactivecurrencies.presentation.theme.SpacingLarge
 import io.github.alxiw.reactivecurrencies.presentation.theme.TitleTextSize

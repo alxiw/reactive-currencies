@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.presentation.currency
+package io.github.alxiw.reactivecurrencies.presentation.currencies
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -36,6 +36,7 @@ import io.github.alxiw.reactivecurrencies.presentation.theme.SpacingSmall
 import io.github.alxiw.reactivecurrencies.presentation.theme.SpacingXSmall
 import io.github.alxiw.reactivecurrencies.presentation.theme.TitleTextSize
 import io.github.alxiw.reactivecurrencies.presentation.theme.ValueTextSize
+import io.github.alxiw.reactivecurrencies.presentation.util.CurrencyUtil
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
 import java.math.RoundingMode

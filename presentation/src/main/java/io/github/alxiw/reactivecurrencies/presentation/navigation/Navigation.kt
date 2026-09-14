@@ -15,10 +15,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.alxiw.reactivecurrencies.presentation.ConverterScreen
-import io.github.alxiw.reactivecurrencies.presentation.ConverterViewModel
-import io.github.alxiw.reactivecurrencies.presentation.CurrenciesScreen
-import io.github.alxiw.reactivecurrencies.presentation.CurrenciesViewModel
+import io.github.alxiw.reactivecurrencies.presentation.converter.ConverterScreen
+import io.github.alxiw.reactivecurrencies.presentation.converter.ConverterViewModel
+import io.github.alxiw.reactivecurrencies.presentation.currencies.CurrenciesScreen
+import io.github.alxiw.reactivecurrencies.presentation.currencies.CurrenciesViewModel
 
 /**
  * Every place the app can navigate to.

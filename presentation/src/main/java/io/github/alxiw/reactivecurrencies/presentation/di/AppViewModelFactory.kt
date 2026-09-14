@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.presentation
+package io.github.alxiw.reactivecurrencies.presentation.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,8 +11,10 @@ import io.github.alxiw.reactivecurrencies.domain.usecase.ConvertValueUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCodesUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCurrenciesUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.UpdateCurrenciesUseCase
+import io.github.alxiw.reactivecurrencies.presentation.converter.ConverterViewModel
+import io.github.alxiw.reactivecurrencies.presentation.currencies.CurrenciesViewModel
 
-class CurrenciesViewModelFactory(
+class AppViewModelFactory(
     private val getCurrenciesUseCase: GetCurrenciesUseCase,
     private val updateCurrenciesUseCase: UpdateCurrenciesUseCase,
     private val changeBaseCurrencyUseCase: ChangeBaseCurrencyUseCase,
