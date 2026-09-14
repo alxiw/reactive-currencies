@@ -3,6 +3,7 @@ package io.github.alxiw.reactivecurrencies.presentation.navigation
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -149,6 +150,7 @@ private fun ConverterBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = Modifier.statusBarsPadding(),
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
