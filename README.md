@@ -1,6 +1,6 @@
 # Reactive Currencies
 
-<img align="right" width="120" src="img/sample-icon.png">
+<img align="right" width="160" src="img/sample-icon.png">
 
 Android application for converting currencies using official exchange rates from the [Central Bank of Russia](https://cbr.ru/eng/currency_base/daily/), fetching data via the [CBR Wrapper API](https://www.cbr-xml-daily.com/) and covering more than 50 currencies. Built mainly as a showcase of modern Android development practices, though fully usable for real conversion too.
 

@@ -1,8 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.mannodermaus.android.junit)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
 android {
@@ -19,12 +27,25 @@ android {
         testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
         vectorDrawables.useSupportLibrary = true
     }
+
+    signingConfigs {
+        create("release") {
+            storeFile = localProperties.getProperty("keystore_path")?.let { file(it) }
+            storePassword = localProperties.getProperty("keystore_password")
+            keyAlias = localProperties.getProperty("key_alias")
+            keyPassword = localProperties.getProperty("key_password")
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

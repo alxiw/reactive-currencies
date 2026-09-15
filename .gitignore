@@ -1,11 +1,19 @@
-*.iml
+# Build artifacts
+build/
+/*/build/
 .gradle
-.gitconfig
+.kotlin/
+.externalNativeBuild/
+
+# IDE settings
+.idea/
+*.iml
 /local.properties
-.idea
 .DS_Store
-/build
-/app/build/
+
+# Captures and logs
 /captures
-.externalNativeBuild
-.kotlin
+.gitconfig
+
+# Release
+/app/release/

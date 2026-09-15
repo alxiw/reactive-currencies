@@ -33,7 +33,10 @@ dependencies {
 
     // Network
     implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.xml)
+    implementation(libs.retrofit.converter.xml) {
+        exclude(group = "xpp3", module = "xpp3")
+        exclude(group = "xmlpull", module = "xmlpull")
+    }
     implementation(libs.retrofit.adapter.rxjava3)
     implementation(libs.logging.interceptor)
 

@@ -1,21 +1,24 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.kts.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Simple and reliable configuration file for R8/ProGuard in release builds.
+# The modern R8 compiler automatically fetches proguard rules from bundled libraries (Retrofit, Room, DataStore).
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# 1. Preserve metadata for readable crash reports (e.g., Firebase Crashlytics)
+# Retain line numbers, generic signatures, and annotations
+-keepattributes SourceFile,LineNumberTable,Signature,InnerClasses,EnclosingMethod,*Annotation*
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Mask original source file names in stack traces with the word "SourceFile"
+-renamesourcefileattribute SourceFile
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# 2. Protect XML/JSON serialization models from obfuscation
+# Since these classes are parsed via reflection (Retrofit XML converter / Room),
+# their names and fields MUST NOT be renamed or stripped.
+
+# Remote API Response Models (Simple XML framework)
+-keep class io.github.alxiw.reactivecurrencies.data.** { *; }
+
+# Simple XML Framework
+-dontwarn org.simpleframework.xml.**
+-keep class org.simpleframework.xml.** { *; }
+-keep class * { @org.simpleframework.xml.** *; }
+
+-keep class io.github.alxiw.reactivecurrencies.data.remote.model.** { *; }
+-keep class io.github.alxiw.reactivecurrencies.data.local.model.** { *; }
