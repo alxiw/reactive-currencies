@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.data.local
+package io.github.alxiw.reactivecurrencies.data.prefs
 
 import android.content.Context
 import androidx.datastore.core.DataMigration
@@ -8,7 +8,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import io.github.alxiw.reactivecurrencies.domain.repository.CurrencyPreferences as DomainPreferences
+import io.github.alxiw.reactivecurrencies.data.mapper.REMOTE_BASE_CURRENCY_CODE
+import io.github.alxiw.reactivecurrencies.data.mapper.REMOTE_BASE_CURRENCY_NOMINAL
+import io.github.alxiw.reactivecurrencies.domain.prefs.CurrencyPreferences as DomainPreferences
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Single
@@ -23,7 +25,7 @@ private const val DATA_STORE_NAME = "currencies_prefs"
 /** Name of the legacy SharedPreferences file used before the DataStore migration. */
 internal const val LEGACY_SHARED_PREFERENCES_NAME = "currencies_prefs"
 
-val Context.currencyDataStore: DataStore<Preferences> by preferencesDataStore(
+internal val Context.currencyDataStore: DataStore<Preferences> by preferencesDataStore(
     name = DATA_STORE_NAME,
     produceMigrations = ::currencyDataStoreMigrations,
 )
@@ -44,9 +46,6 @@ class CurrencyPreferences(private val dataStore: DataStore<Preferences>) : Domai
         private val KEY_UPDATE_DATE = stringPreferencesKey("update_date")
         private val KEY_CONVERT_FROM = stringPreferencesKey("convert_from")
         private val KEY_CONVERT_TO = stringPreferencesKey("convert_to")
-
-        private const val DEFAULT_BASE_CURRENCY = "RUB"
-        private const val DEFAULT_BASE_VALUE = "100"
     }
 
     override val fromCurrency: Maybe<String> = rxMaybe { dataStore.data.first()[KEY_CONVERT_FROM] }
@@ -69,8 +68,8 @@ class CurrencyPreferences(private val dataStore: DataStore<Preferences>) : Domai
 
     override fun loadBaseCurrency(): Single<Pair<String, String>> = rxSingle {
         val preferences = dataStore.data.first()
-        val name = preferences[KEY_BASE_CURRENCY] ?: DEFAULT_BASE_CURRENCY
-        val value = preferences[KEY_BASE_VALUE] ?: DEFAULT_BASE_VALUE
+        val name = preferences[KEY_BASE_CURRENCY] ?: REMOTE_BASE_CURRENCY_CODE
+        val value = preferences[KEY_BASE_VALUE] ?: REMOTE_BASE_CURRENCY_NOMINAL.toString()
         name to value
     }
 

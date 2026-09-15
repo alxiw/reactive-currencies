@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
-import io.github.alxiw.reactivecurrencies.domain.repository.CurrencyPreferences
+import io.github.alxiw.reactivecurrencies.domain.prefs.CurrencyPreferences
 import io.github.alxiw.reactivecurrencies.domain.usecase.ChangeBaseCurrencyUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.ChangeValueUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.ConvertValueUseCase

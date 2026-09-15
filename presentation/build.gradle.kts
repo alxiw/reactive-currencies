@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.mannodermaus.android.junit)
 }
 
 android {
@@ -11,10 +12,16 @@ android {
         minSdk = 26
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    packaging {
+        resources {
+            excludes += "META-INF/COPYRIGHT"
+        }
     }
 
     buildFeatures {
@@ -23,10 +30,12 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-
     implementation(project(":domain"))
 
+    // Android
+    implementation(libs.androidx.core.ktx)
+
+    // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
@@ -36,10 +45,19 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    // Rx
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
 
-    testImplementation(libs.junit)
+    // Tests
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
+    androidTestImplementation(libs.junit.jupiter)
+    androidTestImplementation(libs.mannodermaus.android.test.core)
+    androidTestRuntimeOnly(libs.mannodermaus.android.test.runner)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

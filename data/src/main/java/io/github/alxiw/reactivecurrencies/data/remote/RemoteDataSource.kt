@@ -4,7 +4,7 @@ import io.github.alxiw.reactivecurrencies.data.local.model.CurrenciesDataDto
 import io.github.alxiw.reactivecurrencies.data.mapper.CurrenciesDataConverter
 import io.reactivex.rxjava3.core.Single
 
-class RemoteDataSource(private val apiService: CbrApiService) {
+internal class RemoteDataSource(private val apiService: CbrApiService) {
 
     fun updateCurrenciesData(): Single<CurrenciesDataDto> {
         return apiService.getCbrCurrencies()

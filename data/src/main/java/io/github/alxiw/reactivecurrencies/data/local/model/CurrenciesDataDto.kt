@@ -1,6 +1,6 @@
 package io.github.alxiw.reactivecurrencies.data.local.model
 
-class CurrenciesDataDto(
+internal data class CurrenciesDataDto(
     val date: String,
     val list: Set<CurrencyDto>
 )

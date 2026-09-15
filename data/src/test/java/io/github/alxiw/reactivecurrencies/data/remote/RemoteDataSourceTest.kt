@@ -2,18 +2,18 @@ package io.github.alxiw.reactivecurrencies.data.remote
 
 import io.github.alxiw.reactivecurrencies.data.remote.model.CbrCurrenciesResponse
 import io.reactivex.rxjava3.core.Single
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 
-class RemoteDataSourceTest {
+internal class RemoteDataSourceTest {
 
     private val apiService = FakeCbrApiService()
 
     private val remoteDataSource = RemoteDataSource(apiService)
 
     @Test
-    fun updateCurrenciesData_mapsValidResponse() {
+    internal fun updateCurrenciesData_mapsValidResponse() {
         apiService.response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -35,7 +35,7 @@ class RemoteDataSourceTest {
     }
 
     @Test
-    fun updateCurrenciesData_failsWhenDateIsMissing() {
+    internal fun updateCurrenciesData_failsWhenDateIsMissing() {
         apiService.response = CbrCurrenciesResponse().apply {
             list = arrayListOf(
                 CbrCurrenciesResponse.Currency().apply {
@@ -53,7 +53,7 @@ class RemoteDataSourceTest {
     }
 
     @Test
-    fun updateCurrenciesData_failsWhenListIsEmpty() {
+    internal fun updateCurrenciesData_failsWhenListIsEmpty() {
         apiService.response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf()
@@ -67,7 +67,7 @@ class RemoteDataSourceTest {
     }
 
     @Test
-    fun updateCurrenciesData_failsWhenCurrencyHasNoCharCode() {
+    internal fun updateCurrenciesData_failsWhenCurrencyHasNoCharCode() {
         apiService.response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -85,7 +85,7 @@ class RemoteDataSourceTest {
     }
 
     @Test
-    fun updateCurrenciesData_failsWhenCurrencyHasNoRate() {
+    internal fun updateCurrenciesData_failsWhenCurrencyHasNoRate() {
         apiService.response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -103,7 +103,7 @@ class RemoteDataSourceTest {
     }
 
     @Test
-    fun updateCurrenciesData_propagatesApiError() {
+    internal fun updateCurrenciesData_propagatesApiError() {
         apiService.error = IllegalStateException("network failure")
 
         val error = assertThrows(IllegalStateException::class.java) {

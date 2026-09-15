@@ -59,7 +59,7 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 @Composable
-fun CurrenciesScreen(
+internal fun CurrenciesScreen(
     viewModel: CurrenciesViewModel,
     onOpenConverter: () -> Unit,
     modifier: Modifier = Modifier,
@@ -182,7 +182,7 @@ fun CurrenciesScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CurrenciesScreenContent(
+internal fun CurrenciesScreenContent(
     state: CurrenciesUiState,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),

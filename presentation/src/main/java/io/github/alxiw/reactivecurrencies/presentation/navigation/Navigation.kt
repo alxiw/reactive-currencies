@@ -43,7 +43,7 @@ sealed interface Destination {
         }
 
     companion object {
-        fun fromKey(key: String): Destination? = when (key) {
+        internal fun fromKey(key: String): Destination? = when (key) {
             "currencies" -> Currencies
             "converter" -> Converter
             else -> null
@@ -63,20 +63,20 @@ class Navigator internal constructor(initialDestination: Destination) {
     private val backStack = mutableStateListOf(initialDestination)
 
     /** Destinations rendered on top of the root, e.g. modal bottom sheets. */
-    val overlays: List<Destination> get() = backStack.drop(1)
+    internal val overlays: List<Destination> get() = backStack.drop(1)
 
     /** `true` when there is something to pop. */
-    val canNavigateUp: Boolean get() = backStack.size > 1
+    internal val canNavigateUp: Boolean get() = backStack.size > 1
 
     /** Pushes [destination] onto the back stack (no-op when it is already on top). */
-    fun navigateTo(destination: Destination) {
+    internal fun navigateTo(destination: Destination) {
         if (backStack.last() != destination) {
             backStack.add(destination)
         }
     }
 
     /** Pops the top destination; returns `true` when the back stack actually changed. */
-    fun navigateUp(): Boolean {
+    internal fun navigateUp(): Boolean {
         if (!canNavigateUp) return false
         backStack.removeAt(backStack.lastIndex)
         return true
@@ -85,7 +85,7 @@ class Navigator internal constructor(initialDestination: Destination) {
     internal fun backStackKeys(): List<String> = backStack.map { it.key }
 
     companion object {
-        fun fromBackStack(destinations: List<Destination>): Navigator =
+        internal fun fromBackStack(destinations: List<Destination>): Navigator =
             Navigator(destinations.firstOrNull() ?: Destination.Currencies).apply {
                 destinations.drop(1).forEach(::navigateTo)
             }

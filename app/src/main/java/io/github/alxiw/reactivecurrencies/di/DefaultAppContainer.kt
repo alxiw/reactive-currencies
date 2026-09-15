@@ -12,7 +12,7 @@ import io.github.alxiw.reactivecurrencies.domain.usecase.UpdateCurrenciesUseCase
 import io.github.alxiw.reactivecurrencies.presentation.di.AppViewModelFactory
 import io.github.alxiw.reactivecurrencies.presentation.di.AppContainer
 
-class DefaultAppContainer(context: Context) : AppContainer {
+internal class DefaultAppContainer(context: Context) : AppContainer {
 
     private val dataContainer: DataContainer = DefaultDataContainer(context)
 

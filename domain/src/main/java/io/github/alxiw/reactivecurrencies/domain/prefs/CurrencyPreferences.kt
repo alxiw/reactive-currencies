@@ -1,4 +1,4 @@
-package io.github.alxiw.reactivecurrencies.domain.repository
+package io.github.alxiw.reactivecurrencies.domain.prefs
 
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Maybe

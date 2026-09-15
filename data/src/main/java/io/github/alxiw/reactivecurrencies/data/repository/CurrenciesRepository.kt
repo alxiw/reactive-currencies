@@ -1,20 +1,20 @@
-package io.github.alxiw.reactivecurrencies.data
+package io.github.alxiw.reactivecurrencies.data.repository
 
-import io.github.alxiw.reactivecurrencies.domain.repository.CurrencyPreferences
 import io.github.alxiw.reactivecurrencies.data.local.LocalDataSource
-import io.github.alxiw.reactivecurrencies.domain.model.Currency
-import io.github.alxiw.reactivecurrencies.domain.repository.CurrenciesRepository as DomainRepository
 import io.github.alxiw.reactivecurrencies.data.remote.RemoteDataSource
+import io.github.alxiw.reactivecurrencies.domain.model.Currency
+import io.github.alxiw.reactivecurrencies.domain.prefs.CurrencyPreferences
+import io.github.alxiw.reactivecurrencies.domain.repository.CurrenciesRepository
 import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.rxSingle
 import java.math.BigDecimal
 
-class CurrenciesRepository(
+class CurrenciesRepository internal constructor(
     private val localDataSource: LocalDataSource,
     private val remoteDataSource: RemoteDataSource,
     private val prefs: CurrencyPreferences,
-) : DomainRepository {
+) : CurrenciesRepository {
 
     override fun updateAllCurrencies(): Single<String> {
         return remoteDataSource.updateCurrenciesData()

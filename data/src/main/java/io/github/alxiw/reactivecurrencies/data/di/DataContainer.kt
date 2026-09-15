@@ -3,12 +3,12 @@ package io.github.alxiw.reactivecurrencies.data.di
 import android.content.Context
 import android.util.Log
 import androidx.room.Room
-import io.github.alxiw.reactivecurrencies.data.CurrenciesRepository
+import io.github.alxiw.reactivecurrencies.data.repository.CurrenciesRepository
 import io.github.alxiw.reactivecurrencies.data.local.AppDatabase
 import io.github.alxiw.reactivecurrencies.data.local.CurrencyDao
-import io.github.alxiw.reactivecurrencies.data.local.CurrencyPreferences
+import io.github.alxiw.reactivecurrencies.data.prefs.CurrencyPreferences
 import io.github.alxiw.reactivecurrencies.data.local.LocalDataSource
-import io.github.alxiw.reactivecurrencies.data.local.currencyDataStore
+import io.github.alxiw.reactivecurrencies.data.prefs.currencyDataStore
 import io.github.alxiw.reactivecurrencies.data.local.MIGRATION_1_2
 import io.github.alxiw.reactivecurrencies.data.remote.CbrApiService
 import io.github.alxiw.reactivecurrencies.data.remote.RemoteDataSource
@@ -30,10 +30,6 @@ interface DataContainer {
 class DefaultDataContainer(context: Context) : DataContainer {
 
     private val applicationContext: Context = context.applicationContext
-
-    override val currencyPreferences: CurrencyPreferences by lazy {
-        CurrencyPreferences(applicationContext.currencyDataStore)
-    }
 
     private val apiService: CbrApiService by lazy {
         val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
@@ -78,5 +74,9 @@ class DefaultDataContainer(context: Context) : DataContainer {
 
     override val currenciesRepository: CurrenciesRepository by lazy {
         CurrenciesRepository(localDataSource, remoteDataSource, currencyPreferences)
+    }
+
+    override val currencyPreferences: CurrencyPreferences by lazy {
+        CurrencyPreferences(applicationContext.currencyDataStore)
     }
 }

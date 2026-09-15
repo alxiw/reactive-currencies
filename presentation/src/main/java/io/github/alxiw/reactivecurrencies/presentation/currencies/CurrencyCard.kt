@@ -45,7 +45,7 @@ import kotlin.time.Duration.Companion.milliseconds
 private const val MAX_VALUE_LENGTH = 20
 
 @Composable
-fun CurrencyCard(
+internal fun CurrencyCard(
     currency: Currency,
     enableInput: Boolean,
     onItemClick: () -> Unit,

@@ -15,12 +15,21 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
 }
 
 dependencies {
+    // Android
     implementation(libs.androidx.core.ktx)
+
+    // Rx
     implementation(libs.rxjava)
 
-    testImplementation(libs.junit)
+    // Tests
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.mockito.core)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

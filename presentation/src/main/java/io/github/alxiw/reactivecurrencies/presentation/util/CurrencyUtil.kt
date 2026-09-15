@@ -3,7 +3,7 @@ package io.github.alxiw.reactivecurrencies.presentation.util
 import java.util.Currency
 import java.util.Locale
 
-object CurrencyUtil {
+internal object CurrencyUtil {
 
     private const val ASCII_OFFSET = 0x41
     private const val UNICODE_FLAG_OFFSET = 0x1F1E6

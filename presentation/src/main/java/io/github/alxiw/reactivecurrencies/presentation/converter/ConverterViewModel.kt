@@ -1,8 +1,9 @@
 package io.github.alxiw.reactivecurrencies.presentation.converter
 
+import android.util.Log
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
-import io.github.alxiw.reactivecurrencies.domain.repository.CurrencyPreferences
+import io.github.alxiw.reactivecurrencies.domain.prefs.CurrencyPreferences
 import io.github.alxiw.reactivecurrencies.domain.usecase.ConvertValueUseCase
 import io.github.alxiw.reactivecurrencies.domain.usecase.GetCodesUseCase
 import io.github.alxiw.reactivecurrencies.presentation.util.CurrencyUtil
@@ -13,7 +14,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import io.reactivex.rxjava3.subjects.PublishSubject
 
-sealed interface ConverterIntent {
+internal sealed interface ConverterIntent {
     data object LoadInitial : ConverterIntent
     data object Retry : ConverterIntent
     data class SelectFrom(val code: String) : ConverterIntent
@@ -22,7 +23,7 @@ sealed interface ConverterIntent {
     data object Swap : ConverterIntent
 }
 
-data class ConverterUiState(
+internal data class ConverterUiState(
     val isLoading: Boolean = true,
     val currencies: List<Triple<String, String, String>> = emptyList(),
     val selectedFrom: String = "",
@@ -34,21 +35,25 @@ data class ConverterUiState(
     val showContent: Boolean get() = currencies.isNotEmpty()
 }
 
-sealed interface ConversionState {
+internal sealed interface ConversionState {
     data object Idle : ConversionState
     data object Loading : ConversionState
     data class Result(val value: String) : ConversionState
 }
 
-sealed interface ConverterEvent {
+internal sealed interface ConverterEvent {
     data class ShowError(val message: String) : ConverterEvent
 }
 
-class ConverterViewModel(
+internal class ConverterViewModel(
     private val getCodes: GetCodesUseCase,
     private val convertValue: ConvertValueUseCase,
     private val prefs: CurrencyPreferences,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "ConverterViewModel"
+    }
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -188,7 +193,12 @@ class ConverterViewModel(
         compositeDisposable.add(
             prefs.saveFrom(code)
                 .subscribeOn(Schedulers.io())
-                .subscribe({}, {})
+                .subscribe(
+                    {},
+                    { error ->
+                        Log.e(TAG, "Failed to save 'from' currency: $code", error)
+                    },
+                )
         )
     }
 
@@ -196,7 +206,12 @@ class ConverterViewModel(
         compositeDisposable.add(
             prefs.saveTo(code)
                 .subscribeOn(Schedulers.io())
-                .subscribe({}, {})
+                .subscribe(
+                    {},
+                    { error ->
+                        Log.e(TAG, "Failed to save 'to' currency: $code", error)
+                    },
+                )
         )
     }
 

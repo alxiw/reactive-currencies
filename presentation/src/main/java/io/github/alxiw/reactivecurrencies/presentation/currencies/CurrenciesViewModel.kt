@@ -13,7 +13,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import io.reactivex.rxjava3.subjects.PublishSubject
 
-sealed interface CurrenciesIntent {
+internal sealed interface CurrenciesIntent {
     data object LoadInitial : CurrenciesIntent
     data object Refresh : CurrenciesIntent
     data object Retry : CurrenciesIntent
@@ -21,7 +21,7 @@ sealed interface CurrenciesIntent {
     data class ChangeValue(val currency: Currency) : CurrenciesIntent
 }
 
-data class CurrenciesUiState(
+internal data class CurrenciesUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val currencies: List<Currency> = emptyList(),
@@ -30,14 +30,14 @@ data class CurrenciesUiState(
     val showStub: Boolean get() = currencies.isEmpty() && !isLoading
 }
 
-sealed interface CurrenciesEvent {
+internal sealed interface CurrenciesEvent {
     data class ShowLoadingSuccess(val info: String) : CurrenciesEvent
     data object ShowLoadingError : CurrenciesEvent
     data object ShowUpdatingError : CurrenciesEvent
     data object ScrollToTop : CurrenciesEvent
 }
 
-class CurrenciesViewModel(
+internal class CurrenciesViewModel(
     private val getCurrenciesUseCase: GetCurrenciesUseCase,
     private val updateCurrenciesUseCase: UpdateCurrenciesUseCase,
     private val changeBaseCurrencyUseCase: ChangeBaseCurrencyUseCase,

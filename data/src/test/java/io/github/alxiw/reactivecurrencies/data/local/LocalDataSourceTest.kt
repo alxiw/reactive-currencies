@@ -4,9 +4,9 @@ import io.github.alxiw.reactivecurrencies.data.local.model.CurrencyDto
 import io.github.alxiw.reactivecurrencies.domain.model.Currency
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
 /**
@@ -16,7 +16,7 @@ import java.math.BigDecimal
  * Fixture: 1 RUB = 1 RUB, 1 USD = 100 RUB, 1 JPY = 0.5 RUB, 1 IDR = 0.005 RUB
  * (i.e. 10000 IDR = 50 RUB).
  */
-class LocalDataSourceTest {
+internal class LocalDataSourceTest {
 
     private val currencies = listOf(
         CurrencyDto("RUB", "1.0", 100, "Russian Ruble"),
@@ -28,7 +28,7 @@ class LocalDataSourceTest {
     private val localDataSource = LocalDataSource(FakeCurrencyDao(currencies))
 
     @Test
-    fun convertValue_usesRatePerSingleUnit() {
+    internal fun convertValue_usesRatePerSingleUnit() {
         // 1 USD = 100 RUB, 1 JPY = 0.5 RUB -> 1 USD = 200 JPY
         val result = localDataSource.convertValue("USD", "JPY", BigDecimal.ONE).blockingGet()
 
@@ -36,7 +36,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun convertValue_supportsCurrenciesWithLargeNominal() {
+    internal fun convertValue_supportsCurrenciesWithLargeNominal() {
         // 10000 IDR = 50 RUB -> 1 USD = 20000 IDR
         val result = localDataSource.convertValue("USD", "IDR", BigDecimal.ONE).blockingGet()
 
@@ -44,7 +44,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun convertValue_ignoresNominal() {
+    internal fun convertValue_ignoresNominal() {
         // the same rates quoted for other nominals must not change the result
         val otherNominal = LocalDataSource(
             FakeCurrencyDao(currencies.map { it.copy(nominal = it.nominal * 10) })
@@ -57,28 +57,28 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun convertValue_isReversible() {
+    internal fun convertValue_isReversible() {
         val result = localDataSource.convertValue("JPY", "USD", BigDecimal(200)).blockingGet()
 
         assertEquals(0, result.compareTo(BigDecimal.ONE))
     }
 
     @Test
-    fun convertValue_returnsSameAmountForSameCurrency() {
+    internal fun convertValue_returnsSameAmountForSameCurrency() {
         val result = localDataSource.convertValue("USD", "USD", BigDecimal("123.45")).blockingGet()
 
         assertEquals(0, result.compareTo(BigDecimal("123.45")))
     }
 
     @Test
-    fun convertValue_failsWhenRateIsMissing() {
+    internal fun convertValue_failsWhenRateIsMissing() {
         assertThrows(IllegalStateException::class.java) {
             localDataSource.convertValue("USD", "EUR", BigDecimal.ONE).blockingGet()
         }
     }
 
     @Test
-    fun convertValue_failsWhenStorageIsEmpty() {
+    internal fun convertValue_failsWhenStorageIsEmpty() {
         val empty = LocalDataSource(FakeCurrencyDao(emptyList()))
 
         val error = assertThrows(IllegalStateException::class.java) {
@@ -89,7 +89,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun convertValue_doesNotTouchStorageForSameCurrency() {
+    internal fun convertValue_doesNotTouchStorageForSameCurrency() {
         val empty = LocalDataSource(FakeCurrencyDao(emptyList()))
 
         val result = empty.convertValue("USD", "USD", BigDecimal(10)).blockingGet()
@@ -98,7 +98,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun calculateCurrencyList_failsWhenStorageIsEmpty() {
+    internal fun calculateCurrencyList_failsWhenStorageIsEmpty() {
         val empty = LocalDataSource(FakeCurrencyDao(emptyList()))
 
         val error = assertThrows(RuntimeException::class.java) {
@@ -109,7 +109,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun calculateCurrencyList_expressesValuesInBaseCurrencyUnits() {
+    internal fun calculateCurrencyList_expressesValuesInBaseCurrencyUnits() {
         val list = localDataSource.calculateCurrencyList("RUB", "100").blockingGet()
 
         // 100 RUB = 1 USD = 200 JPY = 20000 IDR
@@ -120,7 +120,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun calculateCurrencyList_keepsNominalAndName() {
+    internal fun calculateCurrencyList_keepsNominalAndName() {
         val list = localDataSource.calculateCurrencyList("RUB", "100").blockingGet()
 
         assertEquals(100, list.first { it.code == "RUB" }.nominal)
@@ -129,14 +129,14 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun calculateCurrencyList_putsBaseFirstAndSortsRestByCode() {
+    internal fun calculateCurrencyList_putsBaseFirstAndSortsRestByCode() {
         val codes = localDataSource.calculateCurrencyList("RUB", "100").blockingGet().map { it.code }
 
         assertEquals(listOf("RUB", "IDR", "JPY", "USD"), codes)
     }
 
     @Test
-    fun calculateCurrencyList_supportsNonReferenceBase() {
+    internal fun calculateCurrencyList_supportsNonReferenceBase() {
         // 10000 IDR = 50 RUB -> 0.5 USD = 100 JPY
         val list = localDataSource.calculateCurrencyList("IDR", "10000").blockingGet()
 

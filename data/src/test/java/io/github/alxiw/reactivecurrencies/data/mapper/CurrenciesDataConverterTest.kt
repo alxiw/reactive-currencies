@@ -1,17 +1,16 @@
 package io.github.alxiw.reactivecurrencies.data.mapper
 
 import io.github.alxiw.reactivecurrencies.data.remote.model.CbrCurrenciesResponse
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
-class CurrenciesDataConverterTest {
+internal class CurrenciesDataConverterTest {
 
     @Test
-    fun mapsNominal_whenPresent() {
+    internal fun mapsNominal_whenPresent() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -30,7 +29,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun defaultsNominalToOne_whenMissing() {
+    internal fun defaultsNominalToOne_whenMissing() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -48,7 +47,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun baseCurrencyNominal_isHundred() {
+    internal fun baseCurrencyNominal_isHundred() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -67,7 +66,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun mapsName_fromBackend() {
+    internal fun mapsName_fromBackend() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -85,7 +84,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun baseCurrencyName_isRussianRuble() {
+    internal fun baseCurrencyName_isRussianRuble() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -102,7 +101,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun convertsCommaRate_toDot() {
+    internal fun convertsCommaRate_toDot() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -119,7 +118,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun mapsDate_whenPresent() {
+    internal fun mapsDate_whenPresent() {
         val response = CbrCurrenciesResponse().apply {
             date = "15.03.2024"
             list = arrayListOf(
@@ -136,7 +135,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun usesCurrentDate_whenDateMissing() {
+    internal fun usesCurrentDate_whenDateMissing() {
         val response = CbrCurrenciesResponse().apply {
             list = arrayListOf(
                 CbrCurrenciesResponse.Currency().apply {
@@ -148,13 +147,12 @@ class CurrenciesDataConverterTest {
 
         val result = CurrenciesDataConverter.fromResponseToDto(response)
 
-        val expected = SimpleDateFormat("dd.MM.yyyy", Locale.ROOT)
-            .format(Date(System.currentTimeMillis()))
+        val expected = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         assertEquals(expected, result.date)
     }
 
     @Test
-    fun addsBaseCurrency_whenListEmpty() {
+    internal fun addsBaseCurrency_whenListEmpty() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf()
@@ -170,7 +168,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun addsBaseCurrency_whenListNull() {
+    internal fun addsBaseCurrency_whenListNull() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = null
@@ -183,7 +181,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun skipsItem_whenCharCodeMissing() {
+    internal fun skipsItem_whenCharCodeMissing() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -200,7 +198,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun skipsItem_whenRateMissing() {
+    internal fun skipsItem_whenRateMissing() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(
@@ -217,7 +215,7 @@ class CurrenciesDataConverterTest {
     }
 
     @Test
-    fun keepsValidItems_andAddsBaseCurrency() {
+    internal fun keepsValidItems_andAddsBaseCurrency() {
         val response = CbrCurrenciesResponse().apply {
             date = "01.01.2024"
             list = arrayListOf(

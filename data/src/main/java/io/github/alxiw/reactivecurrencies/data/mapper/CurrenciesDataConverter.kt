@@ -3,21 +3,16 @@ package io.github.alxiw.reactivecurrencies.data.mapper
 import io.github.alxiw.reactivecurrencies.data.local.model.CurrenciesDataDto
 import io.github.alxiw.reactivecurrencies.data.remote.model.CbrCurrenciesResponse
 import io.github.alxiw.reactivecurrencies.data.local.model.CurrencyDto
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
-object CurrenciesDataConverter {
+internal object CurrenciesDataConverter {
 
-    // RUB is not provided by the backend explicitly, but it is default base currency
-    private const val REMOTE_BASE_CURRENCY = "RUB"
-    private const val REMOTE_BASE_VALUE = "1.0"
-    private const val REMOTE_BASE_NOMINAL = 100
-    private const val REMOTE_BASE_NAME = "Russian Ruble"
-
-    private val format = SimpleDateFormat("dd.MM.yyyy", Locale.ROOT)
+    // immutable and thread-safe, safe to share across threads
+    private val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
     fun fromResponseToDto(input: CbrCurrenciesResponse): CurrenciesDataDto {
-        val date = input.date ?: format.format(Date(System.currentTimeMillis()))
+        val date = input.date ?: LocalDate.now().format(dateFormatter)
         val list = input.list ?: emptyList()
         val set = list.mapNotNull { item ->
             val code = item.charCode ?: return@mapNotNull null
@@ -30,7 +25,14 @@ object CurrenciesDataConverter {
             )
         }
         .toMutableSet()
-        .apply { add(CurrencyDto(REMOTE_BASE_CURRENCY, REMOTE_BASE_VALUE, REMOTE_BASE_NOMINAL, REMOTE_BASE_NAME)) }
+        .apply {
+            add(CurrencyDto(
+                code = REMOTE_BASE_CURRENCY_CODE,
+                value = REMOTE_BASE_CURRENCY_VALUE,
+                nominal = REMOTE_BASE_CURRENCY_NOMINAL,
+                name = REMOTE_BASE_CURRENCY_NAME
+            ))
+        }
 
         return CurrenciesDataDto(date, set)
     }

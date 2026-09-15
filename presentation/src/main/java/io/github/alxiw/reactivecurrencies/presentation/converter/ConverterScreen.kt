@@ -64,7 +64,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 
 @Composable
-fun ConverterScreen(
+internal fun ConverterScreen(
     viewModel: ConverterViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -119,7 +119,7 @@ fun ConverterScreen(
 }
 
 @Composable
-fun ConverterScreenContent(
+internal fun ConverterScreenContent(
     state: ConverterUiState,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
@@ -156,7 +156,7 @@ fun ConverterScreenContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConverterContent(
+internal fun ConverterContent(
     state: ConverterUiState,
     onValueChange: (TextFieldValue) -> Unit,
     onFromCurrencyChange: (String) -> Unit,
@@ -255,7 +255,7 @@ fun ConverterContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CurrencySpinner(
+internal fun CurrencySpinner(
     modifier: Modifier = Modifier,
     selectedCurrency: String,
     currencies: List<Triple<String, String, String>>,
@@ -305,7 +305,7 @@ private fun FieldPlaceholder(text: String) {
 
 @Preview(showBackground = true)
 @Composable
-fun ConverterContentPreview() {
+internal fun ConverterContentPreview() {
     CurrenciesTheme {
         ConverterContent(
             state = ConverterUiState(
@@ -330,7 +330,7 @@ fun ConverterContentPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun ConverterScreenLoadingPreview() {
+internal fun ConverterScreenLoadingPreview() {
     CurrenciesTheme {
         ConverterScreenContent(
             state = ConverterUiState(

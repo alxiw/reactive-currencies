@@ -11,12 +11,12 @@ import io.github.alxiw.reactivecurrencies.data.local.model.CurrencyDto
     version = 2,
     exportSchema = false
 )
-abstract class AppDatabase : RoomDatabase() {
+internal abstract class AppDatabase : RoomDatabase() {
 
     abstract fun currencyDao(): CurrencyDao
 }
 
-val MIGRATION_1_2 = object : Migration(1, 2) {
+internal val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE currency ADD COLUMN nominal INTEGER NOT NULL DEFAULT 1")
         db.execSQL("ALTER TABLE currency ADD COLUMN name TEXT")

@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 import kotlin.collections.sortedWith
 
-class LocalDataSource(private val dao: CurrencyDao) {
+internal class LocalDataSource(private val dao: CurrencyDao) {
 
     fun saveCurrencyList(set: Set<CurrencyDto>): Completable {
         return dao.save(set.toList())
