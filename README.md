@@ -1,12 +1,27 @@
 # Reactive Currencies
 
-Android application for converting currencies using official exchange rates from the [Central Bank of Russia](https://cbr.ru/eng/currency_base/daily/), fetching data via [CBR Wrapper API](https://www.cbr-xml-daily.com/), covering more than 50 currencies.
+<img align="right" width="120" src="img/sample-icon.png">
 
-The app follows the recommended [architecture guidelines](https://developer.android.com/topic/architecture) with a clean separation into data, domain, and presentation layers. The data layer is built around the Repository pattern, with a Room database used for local storage to keep the app fully functional offline once rates have been fetched. The presentation layer follows MVI pattern with Jetpack Compose as the UI framework. 
+Android application for converting currencies using official exchange rates from the [Central Bank of Russia](https://cbr.ru/eng/currency_base/daily/), fetching data via the [CBR Wrapper API](https://www.cbr-xml-daily.com/) and covering more than 50 currencies. Built mainly as a showcase of modern Android development practices, though fully usable for real conversion too.
 
-Users can select any currency as the base and instantly see recalculated exchange values for all other currencies based on the entered amount.
+## Features
 
-<img src="img/sample.png" alt="drawing" width="200"/>
+- **Live rate list** — select any currency as the base and instantly see recalculated values for all other currencies as you type an amount.
+- **Quick converter** — tap the floating action button to open a separate, focused screen for converting one specific currency directly into another.
+- **Offline support** — exchange rates are cached locally, so the app remains fully usable without a network connection once rates have been fetched. Pull-to-refresh lets you fetch the latest rates on demand.
+
+## Architecture
+
+The app follows Clean Architecture, with a clear separation into data, domain, and presentation layers.
+
+- **Data layer** — built around the Repository pattern, backed by a Room database for local storage.
+- **Presentation layer** — follows the MVI pattern, built with Jetpack Compose as the UI framework.
+- **Reactivity** — implemented with RxJava rather than Kotlin coroutines/Flow. Coroutines would be the more conventional choice today and the codebase could be migrated to them fairly easily, but RxJava was deliberately kept here as an experiment in combining it with Jetpack Compose.
+- **DI & navigation** — both are hand-written, simple custom solutions rather than third-party libraries, again as a deliberate exercise rather than a production requirement.
+
+## Screenshots
+
+<img src="img/sample.webp" alt="drawing" width="1000"/>
 
 ## Dependencies
 
